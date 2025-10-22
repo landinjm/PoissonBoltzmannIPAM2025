@@ -7,22 +7,27 @@ using InteractiveUtils
 # ╔═╡ a70cef7d-2a2f-4155-bdf3-fec9df94c63f
 begin
     using Pkg
-    Pkg.activate(joinpath(@__DIR__,".."))
+    Pkg.activate(joinpath(@__DIR__, ".."))
     using PlutoUI, HypertextLiteral, UUIDs
     using LinearAlgebra
     using Interpolations
-    using VoronoiFVM, GridVisualize, ExtendableGrids
+    using VoronoiFVM, ExtendableGrids
     using LaTeXStrings
     using LessUnitful, Unitful
     using PreallocationTools
-    using CairoMakie
-	using LaTeXStrings
-	using DoubleFloats
-	using ForwardDiff 
-    default_plotter!(CairoMakie)
-    CairoMakie.activate!(type = "svg")
-  #  TableOfContents()
+    using PythonPlot
+    using LaTeXStrings
+    using DoubleFloats
+    using ForwardDiff
 end
+
+# ╔═╡ f6947f22-4c05-4cf6-8380-4aace64fe7d3
+    TableOfContents(aside=false)
+
+# ╔═╡ fa12fcd4-032d-4361-9dee-4a46ec8eeb64
+md"""
+# DRAFT: PBB with attempt to add BSK term
+"""
 
 # ╔═╡ 1e7979cc-1946-4070-9df2-9aa0924efe32
 md"""
@@ -35,16 +40,16 @@ See LessUnitful.jl  `ph` and `ufac` and Unitful.jl for `u`
 
 # ╔═╡ 927fac38-2d84-4ae5-984b-732f3b035420
 begin
-    const χ_S = 78.49-1
+    const χ_S = 78.49 - 1
     const F = ph"N_A" * ph"e"
     const K = ufac"K"
     const nm = ufac"nm"
-	const m=ufac"m"
+    const m = ufac"m"
     const dm = ufac"dm"
     const V = ufac"V"
     const mol = ufac"mol"
-	const T=(273.15+25)*ufac"K"
-	const RT = ph"R" * T
+    const T = (273.15 + 25) * ufac"K"
+    const RT = ph"R" * T
 end
 
 # ╔═╡ ce01181a-81c0-4507-9896-4e5f4aa9b8a8
@@ -126,7 +131,7 @@ Motivated by MD experiements by Fedorov/Kornyshev
 """
 
 # ╔═╡ ad1ca3eb-6020-4994-93a5-0cde9c92318d
-LocalResource(joinpath(@__DIR__,"..","assets","FedorovKornyshev.png"))
+LocalResource(joinpath(@__DIR__, "..", "assets", "FedorovKornyshev.png"))
 
 # ╔═╡ f1e8c7c3-98d8-45fa-85d3-c4ebafecdd1d
 md"""
@@ -161,17 +166,17 @@ md"""
 """
 
 # ╔═╡ c2a991c2-c09e-4cbc-8595-de31b11f258c
-const f_model =1
+const f_model = 1
 
 # ╔═╡ 9e5c58ed-af67-4ea4-bae8-e4b75ecd08cd
 begin
-	const floattype=Float64
+    const floattype = Float64
     const L = 10.0nm # computational domain size
-	const nel =20 # number of electrons/nm^2
-	const lc = 0*1*nm # BSK parameter
+    const nel = 20 # number of electrons/nm^2
+    const lc = 1 * nm # BSK parameter
     const M_bulk = 1 # (bulk) molarity at center of domain
-	const E0=floattype(10V/nm) # decrement parameter
-	const a=5.0/E0^2 # decrement parameter in χ(E)
+    const E0 = floattype(10V / nm) # decrement parameter
+    const a = 5.0 / E0^2 # decrement parameter in χ(E)
     const q = nel * ph"e" / ufac"nm^2" # surface charge
     const c_bulk = [M_bulk, M_bulk] * mol / dm^3 # bulk  concentrations
     const z = floattype[-1, 1] # species charge numbers
@@ -181,7 +186,7 @@ begin
 end;
 
 # ╔═╡ a5f44f72-608c-4503-a90a-6fcbf72c2b71
-const xscale=identity;  # x axis scale for graphics
+const xscale = identity;  # x axis scale for graphics
 
 # ╔═╡ b3c378db-3d96-4d67-bc81-f585160bb6b2
 md"""
@@ -194,8 +199,8 @@ Check for bulk electroneutrality:
 # ╔═╡ 6993be42-526d-47bf-8633-1dee7e0a0eab
 begin
     const c0_bulk = c̄ - sum(c_bulk) # solvent bulk molar concentration
-    const l_debye = sqrt((1+χ_S) * ε_0  * RT / (F^2 * c_bulk[1])) # Debye length
-    const dlcap0 = sqrt(2 * (1+χ_S) * ε_0 * F^2 * c_bulk[1] / RT) # Double layer capacitance at point of zero charge (0V)
+    const l_debye = sqrt((1 + χ_S) * ε_0 * RT / (F^2 * c_bulk[1])) # Debye length
+    const dlcap0 = sqrt(2 * (1 + χ_S) * ε_0 * F^2 * c_bulk[1] / RT) # Double layer capacitance at point of zero charge (0V)
 end;
 
 # ╔═╡ bf9ccc9e-bbdb-4511-a28f-4f1802da9f35
@@ -214,24 +219,21 @@ const nref = 4 # grid refinement level
 
 # ╔═╡ f6be79eb-626e-4a47-b82a-85fd78e0498f
 begin
-	const hmin = 1.0e-1 * nm * 2.0^(-nref) # grid size at working electrode
+    const hmin = 1.0e-1 * nm * 2.0^(-nref) # grid size at working electrode
     const hmax = 1.0 * nm * 2.0^(-nref) # grid size at bulk
- 
-	δx=1.0e-3*nm*0 # X offset for logarithmic in x plots
+
+    δx = 1.0e-3 * nm * 0 # X offset for logarithmic in x plots
     X0 = geomspace(δx, L / 2, hmin, hmax)
-    X1 = geomspace(L / 2, L-δx, hmax, hmin)
+    X1 = geomspace(L / 2, L - δx, hmax, hmin)
     X = glue(X0, X1)
 end
 
 # ╔═╡ c5bb8f4a-d146-4f50-b9e7-06611dc825ee
 begin
-	grid = simplexgrid(X)
-	bfacemask!(grid, [L/2], [L/2],3, tol=1.0e-10*nm)
+    grid = simplexgrid(X)
+    bfacemask!(grid, [L / 2], [L / 2], 3, tol = 1.0e-10 * nm)
 
 end
-
-# ╔═╡ 2b7f9ae7-5580-4c06-ac22-d3c0f8325193
-gridplot(grid, size = (600, 200))
 
 # ╔═╡ efdf11c6-b75c-4663-86d5-82ead82c397f
 md"""
@@ -239,7 +241,7 @@ md"""
 """
 
 # ╔═╡ 6897f195-eb28-48b4-b946-52120796fde5
-const Y = DiffCache(ones(floattype,length(z))) # place for temporary data in callbacks
+const Y = DiffCache(ones(floattype, length(z))) # place for temporary data in callbacks
 
 # ╔═╡ 6d26ffef-2456-4f63-b6d7-fc391b760cb7
 function molfractions!(y, ϕ)
@@ -247,7 +249,7 @@ function molfractions!(y, ϕ)
     for i in 1:N
         y[i] = exp(-z[i] * ϕ * F / RT) * c_bulk[i] / c0_bulk
     end
-    denom = 1.0/(one(ϕ) + f_model * sum(y))
+    denom = 1.0 / (one(ϕ) + f_model * sum(y))
     for i in 1:N
         y[i] = y[i] * denom
     end
@@ -256,18 +258,18 @@ end
 
 # ╔═╡ ffbf3c15-9397-4a07-a48f-458c963fe613
 function flux!(y, u, edge, data)
-	eins=one(eltype(u))
-	h=floattype(edgelength(edge))
-	E=(u[1, 1] - u[1, 2])/h
-	χ=χ_S/sqrt(eins+a*E^2)
-	ε=(eins+χ) * ε_0  
-	y[1] = ε* ( (u[1, 1] - u[1, 2]) - lc^2 * (u[2, 1] - u[2, 2]) )
-	y[2] = u[1, 1] - u[1, 2]
-	return nothing
+    eins = one(eltype(u))
+    h = floattype(edgelength(edge))
+    E = (u[1, 1] - u[1, 2]) / h
+    χ = χ_S / sqrt(eins + a * E^2)
+    ε = (eins + χ) * ε_0
+    y[1] = ε * ((u[1, 1] - u[1, 2]) - lc^2 * (u[2, 1] - u[2, 2]))
+    y[2] = u[1, 1] - u[1, 2]
+    return nothing
 end
 
 # ╔═╡ d0ea64ed-d351-401e-bfb7-bdf1fbc7227d
-function spacecharge!(y,ϕ)
+function spacecharge!(y, ϕ)
     N = length(z)
     molfractions!(y, ϕ)
     sumyz = zero(ϕ)
@@ -279,9 +281,9 @@ end
 
 # ╔═╡ 4b497d98-e874-4218-b908-19b792eb9bfa
 function reaction!(y, u, node, data)
-	tmp=get_tmp(Y, u)
-    y[1] = -spacecharge!(tmp,u[1])
-	y[2] = -u[2]
+    tmp = get_tmp(Y, u)
+    y[1] = -spacecharge!(tmp, u[1])
+    y[2] = -u[2]
     return nothing
 end
 
@@ -289,8 +291,8 @@ end
 function bcondition!(y, u, bnode, data)
     boundary_neumann!(y, u, bnode, species = 1, region = 2, value = -q)
     boundary_neumann!(y, u, bnode, species = 1, region = 1, value = q)
-	boundary_dirichlet!(y, u, bnode, species = 2, region = 3, value = 0)
-	return nothing
+    boundary_dirichlet!(y, u, bnode, species = 2, region = 3, value = 0)
+    return nothing
 end
 
 # ╔═╡ c92d5e01-6988-4cbf-bd2f-bdef7bafa86d
@@ -299,8 +301,8 @@ pbsystem = VoronoiFVM.System(
     reaction = reaction!,
     flux = flux!,
     bcondition = bcondition!,
-    species = [1,2],
-	valuetype=floattype
+    species = [1, 2],
+    valuetype = floattype
 )
 
 # ╔═╡ 5ffcb2d2-26c8-4e56-8ca8-247f415d6f82
@@ -309,7 +311,7 @@ md"""
 """
 
 # ╔═╡ f81e55a2-a4fd-4f58-a071-b7f012368dba
-sol=solve(pbsystem, inival=0.1, verbose="n", damp_initial=0.1, maxiters=1000)
+sol = solve(pbsystem, inival = 0.1, verbose = "n", damp_initial = 0.1, maxiters = 1000)
 
 # ╔═╡ ebf55449-0e3e-4a95-8010-ee6c3862cfdf
 md"""
@@ -318,60 +320,60 @@ md"""
 
 # ╔═╡ 33c57d77-17cf-4dfa-8dc8-2346623dbae9
 function concentrations(sol)
-	n=size(sol,2)
-	N=length(z)
-	c=zeros(N,n)
-	y=zeros(N)
-	for i=1:n
-		molfractions!(y,sol[1,i])
-		for j=1:N
-			c[j,i]=c̄*y[j]
-		end
-	end
-	return c
+    n = size(sol, 2)
+    N = length(z)
+    c = zeros(N, n)
+    y = zeros(N)
+    for i in 1:n
+        molfractions!(y, sol[1, i])
+        for j in 1:N
+            c[j, i] = c̄ * y[j]
+        end
+    end
+    return c
 end
 
 # ╔═╡ 00e6a252-2896-40b8-a34f-55fb2780c30c
-function bee!(y,ϕ)
-	N=length(z)
-	for i=1:N
-		y[i]= RT* log(c_bulk[i] / c0_bulk)/F - z[i]*ϕ
-	end
+function bee!(y, ϕ)
+    N = length(z)
+    for i in 1:N
+        y[i] = RT * log(c_bulk[i] / c0_bulk) / F - z[i] * ϕ
+    end
     return nothing
 end
 
 # ╔═╡ bbf14b15-c668-40a9-86b2-8275f055f05f
 function bee(sol)
-	n=size(sol,2)
-	N=length(z)
-	e=zeros(N,n)
-	y=zeros(N)
-	for i=1:n
-	  bee!(y,sol[1,i])
-		for j=1:N
-			e[j,i]=y[j]
-		end
-	end
-	return e
+    n = size(sol, 2)
+    N = length(z)
+    e = zeros(N, n)
+    y = zeros(N)
+    for i in 1:n
+        bee!(y, sol[1, i])
+        for j in 1:N
+            e[j, i] = y[j]
+        end
+    end
+    return e
 
 end
 
 # ╔═╡ bd6b0867-c3c8-4d3c-aee6-213cd87dbfc2
- nv=nodevolumes(pbsystem)
+nv = nodevolumes(pbsystem)
 
 # ╔═╡ 950a9a27-1326-40fb-9f83-1b19a9c91828
 function spacecharges(sol)
-	c=concentrations(sol)
-	n=size(sol,2)
-	nv0=copy(nv)
-	nv0[n÷2+2:end].=0
-	nv0[n÷2+1]/=0.5
-	nvl=copy(nv)
-	tmp=zeros(length(z))
-	nvl[1:n÷2].=0
-	nvl[n÷2+1]/=0.5
-	cdens=[ spacecharge!(tmp,sol[1,i]) for i=1:n]	
-	cdens⋅nv0, cdens⋅nvl
+    c = concentrations(sol)
+    n = size(sol, 2)
+    nv0 = copy(nv)
+    nv0[(n ÷ 2 + 2):end] .= 0
+    nv0[n ÷ 2 + 1] /= 0.5
+    nvl = copy(nv)
+    tmp = zeros(length(z))
+    nvl[1:(n ÷ 2)] .= 0
+    nvl[n ÷ 2 + 1] /= 0.5
+    cdens = [ spacecharge!(tmp, sol[1, i]) for i in 1:n]
+    return cdens ⋅ nv0, cdens ⋅ nvl
 end
 
 # ╔═╡ 43facc9c-dee8-4c59-9ff9-85588a7a1614
@@ -383,13 +385,13 @@ Compare calculated space charges with electrode charges
 spacecharges(sol)
 
 # ╔═╡ 9fab97f7-cd40-41b7-bf7b-e9f7fa8ef8ad
-(q,-q)
+(q, -q)
 
 # ╔═╡ 3c8ef4db-b32e-43df-bb7e-2b698446c9ba
-c=concentrations(sol)
+c = concentrations(sol)
 
 # ╔═╡ d74a2d3a-1f00-44f4-8f9d-afa4ef5561b1
-ε_r=χ_S./(a*((sol[1,2:end]-sol[1,1:end-1])./(X[2:end]-X[1:end-1])).^2 .+ 1).+1
+ε_r = χ_S ./ (a * ((sol[1, 2:end] - sol[1, 1:(end - 1)]) ./ (X[2:end] - X[1:(end - 1)])) .^ 2 .+ 1) .+ 1
 
 # ╔═╡ 8cf198aa-d4a5-46bc-af89-fc4a3256ceb6
 md"""
@@ -397,44 +399,45 @@ md"""
 """
 
 # ╔═╡ 4426f9d5-b580-42e3-9a19-f1f03b33e0b1
-function plotsol(sol; size=(600,400))
-	c=concentrations(sol)
-	cm=c[1,:]⋅nv/(mol/dm^3)/L
-	cp=c[2,:]⋅nv/(mol/dm^3)/L
-	c0=-(sum(c, dims=1).-c̄)
-	e=bee(sol)
-	
-	fig=Figure(;size)
-	ax1=Axis(fig[1,1]; xlabel="z/nm",ylabel="ϕ/V", 
-			 title="ϕ∈$(round.(Float64.(extrema(sol[1,:])),sigdigits=3)), ε_r ∈$(round.(Float64.(extrema(ε_r)),sigdigits=3))",
-			xscale)
-	ylims!(ax1,(-10,10))
+function plotsol(sol; size = (600, 400))
+    PythonPlot.clf()
+    fig, ax = pyplot.subplots(2, 1)
+    ax1 = ax[0]
+    ax2 = ax[1]
+    ax1.grid()
+    ax1r = ax1.twinx()
 
-	ax1r=Axis(fig[1,1];
-		yaxisposition=:right,
-		ylabel=L"ε_r",
-	    xscale
-		)
-	ylims!(ax1r,(0,100))
-	data1=[
-	lines!(ax1, X/nm,sol[1,:], color=:green,     linewidth=2),#
-	lines!(ax1, X/nm,e[1,:], color=:blue,     linewidth=2, linestyle=:dot),
-    lines!(ax1, X/nm,e[2,:], color=:red,     linewidth=2, linestyle=:dot),
-		lines!(ax1r, X[1:end-1]/nm,ε_r, color=:pink, linewidth=3)]
-	#axislegend(ax1, data1, ["ϕ", "ε_r"], position=:cb, backgroundcolor=:transparent)
+    c = concentrations(sol)
+    cm = c[1, :] ⋅ nv / (mol / dm^3) / L
+    cp = c[2, :] ⋅ nv / (mol / dm^3) / L
+    c0 = -(sum(c, dims = 1) .- c̄)
+    e = bee(sol)
+    ax1.set_title("ϕ∈$(round.(Float64.(extrema(sol[1, :])), sigdigits = 3)), ε_r ∈$(round.(Float64.(extrema(ε_r)), sigdigits = 3))")
+    ax1.plot(X / nm, sol[1, :], color = "green", linewidth = 2, label = "ϕ")
+    ax1.plot(X / nm, e[1, :], color = "blue", linewidth = 2, label = L"ψ^+", linestyle = "dotted")
+    ax1.plot(X / nm, e[2, :], color = "red", linewidth = 2, linestyle = "dotted", label = L"ψ^+")
+    ax1r.plot(X[1:(end - 1)] / nm, ε_r, color = "pink", linewidth = 3, label = L"ε_r")
+    ax1.set_ylim(-10, 10)
+    ax1.set_xlabel("z/nm")
+    ax1.set_ylabel("ϕ/V")
+    ax1.legend(loc = (0.1, 0.1))
+    ax1r.legend(loc = (0.8, 0.1))
+    ax1r.set_ylim(0, 80)
 
-	
-	ax2=Axis(fig[2,1]; xlabel="z/nm",ylabel="c/(mol/L)",
-			title="M_avg=$(round.((cm,cp),sigdigits=3))",
-			 xscale
-			)
-	ylims!(ax2,(0,60))
-	data2=[
-	lines!(ax2, X/nm,c[1,:]/(mol/dm^3), color=:blue, linewidth=2)
-	lines!(ax2, X/nm,c[2,:]/(mol/dm^3), color=:red, linewidth=2)
-	lines!(ax2, X/nm,c0[1,:]/(mol/dm^3), color=:green, linewidth=2)]
-	axislegend(ax2, data2, [L"c^-",L"c^+", L"c_{solvent}"], backgroundcolor=:transparent, position=:rb)
-	fig
+    ax2.grid()
+    ax2.set_title("M_avg=$(round.((cm, cp), sigdigits = 3))")
+    ax2.set_xlabel("z/nm")
+    ax2.set_ylabel("c/(mol/L)")
+    ax2.set_ylim(0, 60)
+
+    ax2.plot(X / nm, c[1, :] / (mol / dm^3), color = "blue", linewidth = 2, label = L"c^-")
+    ax2.plot(X / nm, c[2, :] / (mol / dm^3), color = "red", linewidth = 2, label = L"c^+")
+    ax2.plot(X / nm, c0[1, :] / (mol / dm^3), color = "green", linewidth = 2, label = L"c_{solvent}")
+    ax2.legend(loc = (0.4, 0.1))
+
+
+    tight_layout()
+    return PythonPlot.gcf()
 end
 
 # ╔═╡ 33de30bb-1195-4b92-a8cf-70dfe4878755
@@ -511,19 +514,21 @@ end;
 
 # ╔═╡ 31013a97-fc82-4ad2-a14e-81bc93e36b8d
 let
-	mb=M_bulk
-	floataside(md"""
-#### Parameters			   
-- Surface charge: q=$(q |> x->round(x,sigdigits=4)|> u"C/cm^2") 
-- Model: $(f_model == 1 ? "Bikerman" : "Boltzmann/GuoyChapman")
-- Dielectric decrement parameter: a=$(round(Float64(a), sigdigits=5))
-- Bulk molarity: M_bulk = $(mb)
-- BSK parameter ``l_c`` = $(lc|>u"nm")
-""")
+    mb = M_bulk
+    floataside(
+        md"""
+        #### Parameters			   
+        - Surface charge: q=$(q |> x->round(x,sigdigits=4)|> u"C/cm^2") 
+        - Model: $(f_model == 1 ? "Bikerman" : "Boltzmann/GuoyChapman")
+        - Dielectric decrement parameter: a=$(round(Float64(a), sigdigits=5))
+        - Bulk molarity: M_bulk = $(mb)
+        - BSK parameter ``l_c`` = $(lc|>u"nm")
+        """
+    )
 end
 
 # ╔═╡ 124fec69-a922-48f4-8449-7960fdee42be
-floataside(plotsol(sol; size=(400,400)), top=200)
+floataside(plotsol(sol; size = (400, 400)), top = 200)
 
 # ╔═╡ b8fd36a7-d8d1-45f7-b66e-df9132168bfc
 # https://discourse.julialang.org/t/adding-a-restart-process-button-in-pluto/76812/5
@@ -552,6 +557,8 @@ restart_button() = html"""
 
 # ╔═╡ Cell order:
 # ╠═a70cef7d-2a2f-4155-bdf3-fec9df94c63f
+# ╠═f6947f22-4c05-4cf6-8380-4aace64fe7d3
+# ╟─fa12fcd4-032d-4361-9dee-4a46ec8eeb64
 # ╟─1e7979cc-1946-4070-9df2-9aa0924efe32
 # ╠═927fac38-2d84-4ae5-984b-732f3b035420
 # ╟─ce01181a-81c0-4507-9896-4e5f4aa9b8a8
@@ -577,7 +584,6 @@ restart_button() = html"""
 # ╠═53ec6dd6-7554-4d4f-bdb6-e574df37b9b1
 # ╠═f6be79eb-626e-4a47-b82a-85fd78e0498f
 # ╠═c5bb8f4a-d146-4f50-b9e7-06611dc825ee
-# ╠═2b7f9ae7-5580-4c06-ac22-d3c0f8325193
 # ╟─efdf11c6-b75c-4663-86d5-82ead82c397f
 # ╠═6897f195-eb28-48b4-b946-52120796fde5
 # ╠═6d26ffef-2456-4f63-b6d7-fc391b760cb7
