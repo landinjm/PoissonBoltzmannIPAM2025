@@ -13,6 +13,9 @@ PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
 PythonPlot = "274fc56d-3b97-40fa-a1cd-1b4a50311bf9"
 UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 VoronoiFVM = "82b139dc-5afc-11e9-35da-9b9bdfd336f3"
+JuliaMPBSolver = "d8b18f01-5396-498d-b34d-247825c18ff0"
+
+
 
 [compat]
 DoubleFloats = "1"
@@ -27,4 +30,7 @@ PreallocationTools = "0.4"
 PythonCall = "0.9"
 PythonPlot = "1"
 VoronoiFVM = "2"
-julia = "1.10"
+julia = "1.11"
+
+[sources]
+JuliaMPBSolver = {path= "packages/JuliaMPBSolver"}
