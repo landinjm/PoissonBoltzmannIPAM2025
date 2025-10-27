@@ -1,0 +1,247 @@
+\documentclass[12pt,oneside,reqno]{amsart}
+\usepackage[utf8]{inputenc}        % UTF8 fonts
+\usepackage[T1]{fontenc}           % Fix font encoding issues with accented chars
+\usepackage{fouriernc}
+\usepackage[a4paper,portrait,left=1.5cm,outer=3.5cm,headheight=15pt,bottom=3cm,top=3cm]{geometry}
+\usepackage{hyperref}
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage[color]{showkeys}
+\definecolor{refkey}{rgb}{0.3,0.5,0.3}
+\definecolor{labelkey}{rgb}{0.3,0.5,0.3}
+\definecolor{todo}{rgb}{0.6,0.9,0.5}
+\definecolor{refkey}{rgb}{0.3,0.5,0.3}
+\definecolor{labelkey}{rgb}{0.3,0.5,0.3}
+\definecolor{todo}{rgb}{0.6,0.9,0.5}
+\usepackage[textwidth=3cm,textsize=tiny,color=todo]{todonotes}
+
+
+% fix listoftodos for amaart
+\makeatletter
+\providecommand\@dotsep{5}
+\def\listtodoname{List of Todos}
+\def\listoftodos{\@starttoc{tdo}\listtodoname}
+\makeatother
+
+\title{Solving MPB}
+\begin{document}
+\maketitle
+
+\tableofcontents{}
+\listoftodos{}
+
+\section{Introduction}
+We describe the modified Poisson-Boltzmann system as described in  \cite{MuellerFuhrmannLandstorfer2020} and
+adapt it to the symmetric cell calculations of interest.
+
+\section{The model}
+
+Let $\Omega = (0,L)$.
+
+\subsection{Poisson equation}
+
+\begin{equation}\label{eq:Poisson}
+  \begin{aligned}
+    -\nabla \varepsilon \nabla \phi & = \rho(\phi,p) \; \text{in} \Omega \\
+  \end{aligned}
+\end{equation}
+
+We set two variants of boundary conditions:
+\begin{itemize}
+  \item symmetric cell with ideally polarizable electroded and fixed charges:
+        \begin{equation}
+          \label{eq:symmcell}
+          \begin{aligned}
+            \varepsilon\nabla\phi \cdot \vec n |_{x=0} & = q  \\
+            \varepsilon\nabla\phi \cdot \vec n |_{x=L} & = -q
+          \end{aligned}
+        \end{equation}
+
+  \item applied potential difference for half cell with ideally polarizable electrode and bulk interface:
+        \begin{equation}
+          \label{eq:halfcell}
+          \begin{aligned}
+            \varepsilon\nabla\phi \cdot \vec n |_{x=0} & = U      \\
+            \varepsilon\nabla\phi \cdot \vec n |_{x=L} & = \phi^E
+          \end{aligned}
+        \end{equation}
+\end{itemize}
+
+
+Let $\alpha=0\dots N$ be the species index, with the assumption that $\alpha=0$ denotes
+the electroneutral solvent.
+Then we have for the mole fractions
+\begin{align}\label{eq:y}
+  y_\alpha(\phi,p)= y_\alpha^E\exp\left( - \frac{z_\alpha e (\phi-\phi^E) + v_\alpha(p-p^E)}{k_BT}\right)
+\end{align}
+and can calculate the space charge density as
+\begin{align}\label{eq:rho}
+  \rho(\phi,p) = e\sum_{\alpha=1}^n z_\alpha n_\alpha = e\sum_{\alpha=1}^N z_\alpha \frac{y_\alpha}{\sum_{\alpha=0}^N v_\alpha y_\alpha}.
+\end{align}
+\medskip
+
+\begin{tabular}{|r|l|}
+  \hline
+  constant $k_B$                                    & Boltzmann constant                       \\
+  constant $e$                                      & elementary charge                        \\
+  given $T$                                         & temperature  (often $T=298.15K$          \\
+  given $p^E$                                       & reference pressure (usually $p^E=0$)     \\
+  given $\phi^E$                                    & reference potential (usually $\phi^E=0$) \\
+  given $\kappa_\alpha$                             & solvation numbers ($\kappa_0=0$)         \\
+  given $v_\alpha^u$                                & unsolvated molecular volumes             \\
+  given $z_\alpha$                                  & charge numbers ($z_0=0$)                 \\
+  given $q$ or $U$                                  & (surface) charge or applied potential    \\
+  given ($\alpha=1\dots N$) $n_\alpha^E$            & reference number densities               \\
+  $v_\alpha= v_\alpha^u+\kappa v_0$                 & solvated molecular volumes               \\
+  $y_\alpha^E$                                      & reference mole fractions                 \\
+  $n=\frac{1}{\sum_{\alpha=0}^N v_\alpha y_\alpha}$ & mixture number density                   \\
+  $n_\alpha = y_\alpha n$                           & species number density                   \\
+  $\phi$                                            & electrostatic potential                  \\
+  $p$                                               & pressure                                 \\
+  \hline
+\end{tabular}
+\bigskip
+
+For the half cell case, the reference values $\ast^E$ are given at the bulk boundary $x=L$.
+From a given molarity $M$ one obtains the bulk number densities $n_\alpha^E$ which
+must fulfilll electroneutrality $\sum_{\alpha=1}^N n_\alpha^E =0$. This then allows to calculate
+the solvent bulk number density $n_0^E=\frac{1}{v_0} - \sum_{\alpha=1}^N v_\alpha n_\alpha^E$.
+
+For the symmetric cell case, these data can be seen as the values at $x=L/2$ for a symmetric
+binary electrolyte.
+\todo{How these can be intepreted in the general case?}
+
+
+\subsection{Pressure calculation}
+
+
+It remains to solve for the pressure.
+
+There are two ways to solve for the pressure.
+
+\subsubsection{Second order pressure PDE (``Pressure Poisson'')}
+
+First, one can use the momentum balance in mechanical equilibrium
+\begin{align}
+  \label{eq:momentumbalance}
+  \nabla p = -q\nabla \phi
+\end{align}
+
+for the pressure derived as part of the generalized Nernst-Planck-Poisson
+system \cite{dreyer2013overcoming} and take the divergence as suggested in \cite{Fuhrmann2015xCPC}, arriving at
+a second order PDE
+\begin{equation}\label{eq:pressurePDE}
+  \begin{aligned}
+    - \Delta p & = q\nabla\phi  \; \text{in} \Omega.
+  \end{aligned}
+\end{equation}
+The boundary conditions are:
+
+\begin{itemize}
+  \item Symmetric cell:
+        \begin{equation}\label{eq:symmcell}
+          \begin{aligned}
+            \nabla p - q\nabla\phi\cdot \vec n|_{x=0,L} & =0   \\
+            p|_{x=L/2}                                  & =p^E
+          \end{aligned}
+        \end{equation}
+  \item Half cell:
+        \begin{equation}\label{eq:phalfcell}
+          \begin{aligned}
+            \nabla p - q\nabla\phi\cdot \vec n|_{x=0} & =0   \\
+            p|_{x=L}                                  & =p^E
+          \end{aligned}
+        \end{equation}
+\end{itemize}
+
+
+\subsubsection{Algebraic pressure equation}
+As an alternative, one can use the approach described in \cite{MuellerFuhrmannLandstorfer2020},
+and instead of the pressure PDE solve an algebraic system
+\begin{align}
+  \label{eq:pressureAE}
+  \sum_{\alpha=0}^N y_\alpha(\phi,p)=1
+\end{align}
+or (as it occured numerically to be more benign)
+
+\begin{align}
+  \label{eq:pressureAElog}
+  \log \sum_{\alpha=0}^N y_\alpha(\phi,p)=0.
+\end{align}
+
+\subsubsection{Discussion}
+Numerical examples show that both approaches give the same results.
+\begin{itemize}
+  \item  In the papers leading to \cite{MuellerFuhrmannLandstorfer2020}, \eqref{eq:pressureAE} has
+        been derived using \eqref{eq:momentumbalance}. It would be interesting to see if
+        one can show their equivalence within the context of this draft. \todo{Pressure equations equivalence}
+  \item The algebraic condition  \eqref{eq:pressureAE} is only valid in equilibrium. For transient
+        problems, one needs to resort to \eqref{eq:momentumbalance} or \eqref{eq:pressurePDE}.
+  \item If all molecular volumes are equal (i.e. $\kappa_\alpha=0, v_\alpha=v_0$ for $ \alpha=1\dots n$,
+        the equations decouple. It is interesting to see the behavior of the pressure here.
+\end{itemize}
+
+\section{Computations}
+
+\subsection{Half cell problem}
+This is the classical problem leading to the calculation of double layer capacitances.
+From the space charge density $\rho(\phi, p)$ for given solution with applied potential $U$,
+one calculates the double layer charge
+\begin{align}
+  \label{eq:spacecharge}
+  Q_{dl}=Q_{dl}(U)=\int_\Omega \rho\; d\omega.
+\end{align}
+(This formula takes into account that there is no boundary layer in the system). Repeated calculations
+for different applied potentials $U$ allow to estimate the space charge capacitance
+\begin{align}
+  \label{eq:dlcap}
+  C_{dl}(U) = \frac{dQ}{dU} \approx  \frac{Q(U+\delta U)-Q(U)}{\delta U}.
+\end{align}
+\todo{I think we also should write code for this as part of verfication}
+
+\subsection{Symmetric cell problem}
+This problem appears to be less investigated.\todo{Do some literature research here}
+However, we can hypothesize some of its properties:
+\begin{itemize}
+  \item As we apply opposite charges at the interfaces, global electroneutrality  enforces
+        \begin{align}
+          \label{eq:globneutral}
+          \int_\Omega \rho\; d\omega  =0
+        \end{align}
+  \item For this problem, we can define $U=\phi(0)-\phi(L)$, and we can calculate the values
+        $U(q)$. Does inversion of this relationship provide similar double layer capacitance curves ?
+        \todo{$C_{dl}$ for symmetric case}
+  \item The given input data (fixing $n_\alpha^E$) do not correspond to the molecular simulation
+        experiment to be compared to. IMHO, we need to fix the number of ions in the domain
+        $$n_\alpha^{\Omega} = \int_\Omega n_\alpha d\omega.$$\todo{Develop an efficient
+          algorithm for this calculation using AD}
+
+        When working with the transient problem, one could just fix an initial concentration
+        value and solve the evolution after applying the charge (very much like in the molecular
+        simulation experiment). \todo{One should be able to show the limit mathematically, including
+          free energy decay and dissipation. Also on the level of discretizations}
+\end{itemize}
+
+
+
+\section{Generalizations, alternative formulations}
+\begin{itemize}
+  \item We can formulate everything in molar concentrations and activity coefficients \todo{Activity coefficients?}
+  \item The full problem als takes into account molar masses. \todo{Do we need to consider molar masses ?}
+  \item Field dependent dielectric permittivity is rather straightforward here
+        \cite{landstorfer2022thermodynamic}
+        \todo{Add field dependedent   $\varepsilon$}
+  \item Understand influence of concentration dependent permittivity
+        \cite{landstorfer2022thermodynamic}
+        \todo{Investigate concentration dependent   $\varepsilon$}
+  \item Investigate ionic interaction terms, see e.g. \cite{bazant2011double}, \cite{SchammerPhD2023}
+        \todo{Discuss oscillations}
+\end{itemize}
+
+\section{API}
+
+
+\bibliographystyle{alpha}
+\bibliography{draft}
+\end{document}
