@@ -1,4 +1,10 @@
 name = "JuliaMPBSolver"
 uuid = "d8b18f01-5396-498d-b34d-247825c18ff0"
-version = "0.1.0"
 authors = ["Jürgen Fuhrmann <juergen-fuhrmann@web.de>"]
+version = "0.1.0"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
