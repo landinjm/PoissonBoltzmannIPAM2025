@@ -35,3 +35,9 @@ You can then open one of the notebooks or execute one of the scripts.
 └── scripts
     └── demo-script.jl           # Script template
 ```
+
+## Workflow hints
+For workflow hints, see
+- https://modernjuliaworkflows.org/
+- https://j-fu.github.io/marginalia/julia/
+  
