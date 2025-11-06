@@ -3,6 +3,16 @@ uuid = "d8b18f01-5396-498d-b34d-247825c18ff0"
 authors = ["Jürgen Fuhrmann <juergen-fuhrmann@web.de>"]
 version = "0.1.0"
 
+[deps]
+ExtendableGrids = "cfc395e8-590f-11e8-1f13-43a2532b2fa8"
+LessUnitful = "f29f6376-6e90-4d80-80c9-fb8ec61203d5"
+Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
+
+[compat]
+ExtendableGrids = "1.14.0"
+LessUnitful = "1.2.1"
+Unitful = "1.25.1"
+
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 

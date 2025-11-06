@@ -1,8 +1,27 @@
 PoissonBoltzmannIPAM2025
 =======================
 
-Project to develop Modified Poisson-Boltzman solver for comparing with
+Project to develop Modified Poisson-Boltzmann solver for comparing with
 molecular level simulations.
+
+We are solving a class of Poisson-Boltzmann systems as described below. First, we have poisson equation for charge density.
+$$
+-\nabla \cdot (\varepsilon(\phi, y_\alpha) \nabla \phi) = \rho(\phi, p)\ in\ \Omega
+$$
+with mole fractions of species $\alpha$
+$$
+y_\alpha(\phi, p)=y^E_\alpha exp(-\frac{z_\alpha e(\phi-\phi^E)+v_\alpha(p-p^E)}{k_B T})
+$$
+and charge density
+$$
+\rho(\phi, p) = e \sum_{\alpha=0}^N z_\alpha \frac{y_\alpha (\phi, p)}{\sum_{\alpha=0}^N v_\alpha y_\alpha (\phi, p)}
+$$
+We must also solve for pressure to establish mechanical equilibrium with a simple pressure poisson.
+$$
+\nabla p = -q\nabla\phi \longrightarrow \Delta p = -\nabla \cdot (q\nabla\phi) \ in\ \Omega
+$$
+
+After simulating we get $q(V)$, $C(V)$, $c_\alpha(x)$, $\phi(x)$.
 
 ## Getting started
 First, we'll clone the repository and instantiate the packages. **Make sure you have julia 1.11!**
