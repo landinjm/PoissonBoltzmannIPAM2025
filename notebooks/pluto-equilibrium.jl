@@ -297,10 +297,10 @@ end;
 # ╔═╡ 0d825f88-cd67-4368-90b3-29f316b72e6e
 begin
   """
-    EquilibriumData
+      EquilibriumData
 
-Data structure containg data for equilibrum calculations
-"""
+  Data structure containg data for equilibrum calculations
+  """
   Base.@kwdef mutable struct EquilibriumData
     N::Int64 = 2                     # number of ionic species
     T::Float64 = 298.15 * ufac"K"        # temperature
