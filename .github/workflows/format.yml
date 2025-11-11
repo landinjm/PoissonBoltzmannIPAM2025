@@ -1,0 +1,31 @@
+name: Format Check
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.event_name }}-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request'}}
+
+permissions:
+  contents: read
+
+jobs:
+  julia-format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 10
+
+      - name: Julia format check
+        uses: julia-actions/julia-format@v4
+        with:
+          version: '2.1.6'
+          suggestion-label: 'format-suggest'
