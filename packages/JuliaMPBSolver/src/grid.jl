@@ -12,7 +12,46 @@ end
 
 GeometricGrid() = GeometricGrid(10.0f0, 1, 0.1f0, 1.0f0, false)
 
-function create_grid(grid::GeometricGrid)
+function add_boundary_face!(
+  grid::ExtendableGrid,
+  x_position::Real,
+  region_label::Integer,
+  tolerance::Real,
+)
+  return bfacemask!(
+    grid,
+    [x_position],
+    [x_position],
+    region_label,
+    tol = tolerance,
+  )
+end
+
+function create_half_cell(grid::GeometricGrid)
+  # Compute a minimum and maximum cell size from the provided values and
+  # refinement. This is a little weird to me because the GeometricGrid
+  # hmin and hmax should be obeyed here (logically). However, then
+  # the refinement is of little use. 
+  # TODO: IDK Fix this logic
+  local_hmin = grid.hmin / 2.0^grid.refinement
+  local_hmax = grid.hmax / 2.0^grid.refinement
+
+  # Create a little offset 
+  offset = 0.0f0
+  if grid.use_offset
+    offset = 1.0e-3 * grid.domain_size
+  end
+
+  # Create to geometric spacings
+  x = geomspace(offset, grid.domain_size, local_hmin, local_hmax)
+
+  # Create the simplex grid
+  x = simplexgrid(x)
+
+  return x
+end
+
+function create_full_cell(grid::GeometricGrid)
   # Compute a minimum and maximum cell size from the provided values and
   # refinement. This is a little weird to me because the GeometricGrid
   # hmin and hmax should be obeyed here (logically). However, then
@@ -38,15 +77,7 @@ function create_grid(grid::GeometricGrid)
   x = simplexgrid(x)
 
   # Add a face to the grid in the middle
-  # TODO: Refactor this as a function. We don't always need this additional 
-  # face to impose boundary conditions
-  bfacemask!(
-    x,
-    [grid.domain_size / 2],
-    [grid.domain_size / 2],
-    3,
-    tol = 1.0e-2 * local_hmin,
-  )
+  add_boundary_face!(x, grid.domain_size / 2, 3, 1.0e-2 * local_hmin)
 
   return x
 end
