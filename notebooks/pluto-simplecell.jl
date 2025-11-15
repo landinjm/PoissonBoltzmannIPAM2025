@@ -447,6 +447,7 @@ function plotsol(sol; size = (600, 400))
   ax2.legend(loc = (0.4, 0.1))
 
   tight_layout()
+  savefig("simplecell.jpg", dpi = 300)
   return PythonPlot.gcf()
 end
 

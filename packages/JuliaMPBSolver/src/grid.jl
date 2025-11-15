@@ -3,28 +3,31 @@ module Grid
 using ExtendableGrids
 
 struct GeometricGrid
-  domain_size::Float32
-  refinement::Int32
-  hmin::Float32
-  hmax::Float32
+  domain_size::AbstractFloat
+  refinement::Int
+  hmin::AbstractFloat
+  hmax::AbstractFloat
   use_offset::Bool
 end
 
-GeometricGrid() = GeometricGrid(10.0f0, 1, 0.1f0, 1.0f0, false)
+function GeometricGrid(;
+  domain_size::AbstractFloat,
+  refinement::Int,
+  hmin::AbstractFloat,
+  hmax::AbstractFloat,
+  use_offset::Bool,
+)
+  return GeometricGrid(domain_size, refinement, hmin, hmax, use_offset)
+end
 
 function add_boundary_face!(
   grid::ExtendableGrid,
-  x_position::Real,
-  region_label::Integer,
-  tolerance::Real,
+  x_position::AbstractFloat,
+  region_label::Int,
+  tolerance::AbstractFloat,
 )
-  return bfacemask!(
-    grid,
-    [x_position],
-    [x_position],
-    region_label,
-    tol = tolerance,
-  )
+  bfacemask!(grid, [x_position], [x_position], region_label, tol = tolerance)
+  return nothing
 end
 
 function create_half_cell(grid::GeometricGrid)
@@ -81,6 +84,8 @@ function create_full_cell(grid::GeometricGrid)
 
   return x
 end
+
+get_coordinates(grid::ExtendableGrid) = grid[Coordinates][1, :]
 
 function is_equivalent(
   grid::ExtendableGrid,
