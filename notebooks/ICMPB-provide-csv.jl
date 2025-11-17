@@ -34,6 +34,7 @@ begin
   using ForwardDiff
   using PythonPlot
   using NLsolve
+  using DelimitedFiles
 
   using DrWatson
 
@@ -381,14 +382,12 @@ $(@bind M3_avg confirm(PlutoUI.Slider(0.1:0.1:10, default=2, show_value=true),la
 ``n_e``: $(@bind n3_e confirm(PlutoUI.Slider(1:1:20, default=1, show_value=true),label="Go"))
 """
 
+
+# ╔═╡ 6af9813f-8927-4701-ace0-b0ac1c4c76e8
+Z=grid[Coordinates]/nm
+
 # ╔═╡ 064e1460-d9ef-43bf-8e57-f55ef5dc5f60
-indata=(M=M3_avg,ne=n3_e, nm=L/nm)
-
-# ╔═╡ 580d462e-a2d3-4c1c-a316-9916f2ad63ed
-savename(indata,"csv")
-
-# ╔═╡ 31bb7711-abd0-42b3-86cf-577cddc104d7
-@bind dosave PlutoUI.Button()
+indata=(M=M3_avg,q=n3_e, L=L/nm, n=length(Z))
 
 # ╔═╡ 30a93ebe-43a6-4ce9-afe5-de8cb3cc9a5d
 c3_avg = fill(M3_avg * mol / dm^3, 2)
@@ -442,11 +441,19 @@ end;
 sol3 = solve!(state3; inival = inival3, verbose = "n", damp_initial = 0.5)
 
 # ╔═╡ 3ef203e9-7beb-4b28-b62c-f63b12e0d628
-conc=concentrations(sol3, data3, c_ref=extcref(sol3[2:N, i3], data3))
+conc=concentrations(sol3, data3, c_ref=extcref(sol3[2:N, i3], data3))/(mol/dm^3)
+
+# ╔═╡ 31bb7711-abd0-42b3-86cf-577cddc104d7
+md""" Save: $(@bind dosave PlutoUI.CheckBox())   Save again: $(@bind saveagain PlutoUI.Button("Save again")) """
+
+# ╔═╡ 2837efc4-3f0a-4bc6-82f2-861b94df6af3
+result=vcat(Z, conc)'
 
 # ╔═╡ 89e8a56c-9a28-407f-9490-7c5acd2ffb3d
-begin
-	 DataOut.write_csv_data!(resultsdir(savename("conc",indata,"csv")),conc[1,:])
+if dosave 
+	saveagain
+	writedlm(resultsdir(savename("icmpb",indata,"csv")),result, ",")
+	@info "written $(rand())"
 end
 
 # ╔═╡ 8af12f1c-d35b-4cc9-8185-1bb5adbb69e8
@@ -667,20 +674,21 @@ restart_button() = html"""
 # ╟─4445180b-3e7b-4315-8d6e-37c02a9886eb
 # ╠═13cb4936-ff78-4064-85c5-a7d51c4963e3
 # ╠═064e1460-d9ef-43bf-8e57-f55ef5dc5f60
-# ╠═580d462e-a2d3-4c1c-a316-9916f2ad63ed
-# ╠═31bb7711-abd0-42b3-86cf-577cddc104d7
-# ╠═3ef203e9-7beb-4b28-b62c-f63b12e0d628
-# ╠═89e8a56c-9a28-407f-9490-7c5acd2ffb3d
+# ╠═6af9813f-8927-4701-ace0-b0ac1c4c76e8
 # ╠═30a93ebe-43a6-4ce9-afe5-de8cb3cc9a5d
 # ╠═633ec843-2aaa-46b6-beda-cd1f2e0ab430
 # ╠═e5b3dd26-7df7-41cf-ad5f-887d95f73135
 # ╠═64f4c78a-22b3-4c46-a4ab-59cf0b511756
 # ╠═73791e32-0cb7-4feb-93b1-2933ac662a0c
 # ╠═7d5cf0bf-515f-46a7-9970-742911e27974
-# ╟─8af12f1c-d35b-4cc9-8185-1bb5adbb69e8
-# ╟─2e8d2fcf-c623-4142-a06e-a1a3bd02bf30
+# ╠═3ef203e9-7beb-4b28-b62c-f63b12e0d628
+# ╟─31bb7711-abd0-42b3-86cf-577cddc104d7
+# ╠═2837efc4-3f0a-4bc6-82f2-861b94df6af3
+# ╠═89e8a56c-9a28-407f-9490-7c5acd2ffb3d
+# ╠═8af12f1c-d35b-4cc9-8185-1bb5adbb69e8
+# ╠═2e8d2fcf-c623-4142-a06e-a1a3bd02bf30
 # ╠═fb1c3580-149a-41d6-97eb-e3ce76be331b
 # ╠═3fa9d05a-a3f6-4e07-9a5d-f53ee2126cae
-# ╟─784b4c3e-bb2a-4940-a83a-ed5e5898dfd4
-# ╟─afe4745f-f9f1-4e23-8735-cbec6fb79c41
-# ╟─b8fd36a7-d8d1-45f7-b66e-df9132168bfc
+# ╠═784b4c3e-bb2a-4940-a83a-ed5e5898dfd4
+# ╠═afe4745f-f9f1-4e23-8735-cbec6fb79c41
+# ╠═b8fd36a7-d8d1-45f7-b66e-df9132168bfc
