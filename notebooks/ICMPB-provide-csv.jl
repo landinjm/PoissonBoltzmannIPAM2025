@@ -182,8 +182,8 @@ begin
   const f_mod = true # model choice: 0: Boltzmann, 1: Bikerman
   const nref = 4 # grid refinement level
   const L = 2.278592867nm # computational domain size
-  const n_e = 10 # number of electrons/nm^2 at interfaces, defines q
-  const M_avg = 10 # average molarity
+  const n_e = 1 # number of electrons/nm^2 at interfaces, defines q
+  const M_avg = 2 # average molarity
   const E_0 = 10V / nm # decrement parameter
   const a = 5.0 / E_0^2 # decrement parameter in χ(E)
   const z = [-1, 1.0] # species charge numbers
@@ -459,6 +459,26 @@ result=vcat(Z, c0, conc)'
 if dosave 
 	saveagain
 	writedlm(resultsdir(savename("icmpb",indata,"csv")),result, ",")
+
+  JuliaMPBSolver.DataOut.write_hdf5_data!(
+    resultsdir(savename("icmpb", indata, "hdf5")),
+    grid,
+    c0,
+    "c_solvent",
+  )
+  JuliaMPBSolver.DataOut.write_hdf5_data!(
+    resultsdir(savename("icmpb", indata, "hdf5")),
+    grid,
+    conc[1, :],
+    "c_anion",
+  )
+  JuliaMPBSolver.DataOut.write_hdf5_data!(
+    resultsdir(savename("icmpb", indata, "hdf5")),
+    grid,
+    conc[2, :],
+    "c_cation",
+  )
+
 	@info "written $(rand())"
 end
 

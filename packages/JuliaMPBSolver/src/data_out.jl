@@ -21,7 +21,18 @@ function write_hdf5_data!(
 
   @assert length(grid_coordinates) == length(solution)
 
-  file_stream["x"] = grid_coordinates
+  if haskey(file_stream, "x")
+    existing_x = read(file_stream["x"])
+    if existing_x != grid_coordinates
+      close(file_stream)
+      error(
+        "Grid coordinates mismatch: existing x-coordinates differ from current grid",
+      )
+    end
+  else
+    file_stream["x"] = grid_coordinates
+  end
+
   file_stream[solution_name] = solution
 
   close(file_stream)
