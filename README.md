@@ -39,11 +39,16 @@ You can then open one of the notebooks or execute one of the scripts.
 ├── assets                       # Some data used by the demo code 
 │   └── FedorovKornyshev.png
 ├── LICENSE
+├── results                      # Subdirectory with calculation results
 ├── notebooks
 │   ├── demo-notebook.jl         # Notebook template
-│   ├── pluto-equilibrium.jl
+│   ├── ICMPB.jl                 # Ion conserving MPB draft with different solver variants
+│   ├── ICMPB-provide-csv.jl     # Ion conserving MPB solution with csv output of concentration
+│   ├── pluto-equilibrium.jl     # MPB solver comparing pressure poisson with incompressibility
 │   ├── pluto-simplecell-bsk.jl  # MPB demo (WIP) with Bazant-Storey-Kornyshev model
 │   └── pluto-simplecell.jl      # Poisson-Boltzmann/Bikermann demo
+├── src
+│   └── PoissonBoltzmannIPAM2025.jl  # Module with shared code for project
 ├── packages
 │   └── JuliaMPBSolver           # Main package
 │       ├── Project.toml
