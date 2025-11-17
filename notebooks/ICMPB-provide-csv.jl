@@ -181,7 +181,7 @@ md"""
 begin
   const f_mod = true # model choice: 0: Boltzmann, 1: Bikerman
   const nref = 4 # grid refinement level
-  const L = 2nm # computational domain size
+  const L = 2.278592867nm # computational domain size
   const n_e = 10 # number of electrons/nm^2 at interfaces, defines q
   const M_avg = 10 # average molarity
   const E_0 = 10V / nm # decrement parameter
@@ -389,6 +389,9 @@ Z=grid[Coordinates]/nm
 # ╔═╡ 064e1460-d9ef-43bf-8e57-f55ef5dc5f60
 indata=(M=M3_avg,q=n3_e, L=L/nm, n=length(Z))
 
+# ╔═╡ c2688a2f-472f-4f2e-8378-b0306299e225
+savename(indata)
+
 # ╔═╡ 30a93ebe-43a6-4ce9-afe5-de8cb3cc9a5d
 c3_avg = fill(M3_avg * mol / dm^3, 2)
 
@@ -443,11 +446,14 @@ sol3 = solve!(state3; inival = inival3, verbose = "n", damp_initial = 0.5)
 # ╔═╡ 3ef203e9-7beb-4b28-b62c-f63b12e0d628
 conc=concentrations(sol3, data3, c_ref=extcref(sol3[2:N, i3], data3))/(mol/dm^3)
 
+# ╔═╡ 24bf7c21-0027-4f28-aa69-b2bbb6934bf7
+c0=c̄/(mol/dm^3).-sum(conc,dims=1)
+
 # ╔═╡ 31bb7711-abd0-42b3-86cf-577cddc104d7
 md""" Save: $(@bind dosave PlutoUI.CheckBox())   Save again: $(@bind saveagain PlutoUI.Button("Save again")) """
 
 # ╔═╡ 2837efc4-3f0a-4bc6-82f2-861b94df6af3
-result=vcat(Z, conc)'
+result=vcat(Z, c0, conc)'
 
 # ╔═╡ 89e8a56c-9a28-407f-9490-7c5acd2ffb3d
 if dosave 
@@ -674,6 +680,7 @@ restart_button() = html"""
 # ╟─4445180b-3e7b-4315-8d6e-37c02a9886eb
 # ╠═13cb4936-ff78-4064-85c5-a7d51c4963e3
 # ╠═064e1460-d9ef-43bf-8e57-f55ef5dc5f60
+# ╠═c2688a2f-472f-4f2e-8378-b0306299e225
 # ╠═6af9813f-8927-4701-ace0-b0ac1c4c76e8
 # ╠═30a93ebe-43a6-4ce9-afe5-de8cb3cc9a5d
 # ╠═633ec843-2aaa-46b6-beda-cd1f2e0ab430
@@ -682,11 +689,12 @@ restart_button() = html"""
 # ╠═73791e32-0cb7-4feb-93b1-2933ac662a0c
 # ╠═7d5cf0bf-515f-46a7-9970-742911e27974
 # ╠═3ef203e9-7beb-4b28-b62c-f63b12e0d628
+# ╠═24bf7c21-0027-4f28-aa69-b2bbb6934bf7
 # ╟─31bb7711-abd0-42b3-86cf-577cddc104d7
 # ╠═2837efc4-3f0a-4bc6-82f2-861b94df6af3
 # ╠═89e8a56c-9a28-407f-9490-7c5acd2ffb3d
-# ╠═8af12f1c-d35b-4cc9-8185-1bb5adbb69e8
-# ╠═2e8d2fcf-c623-4142-a06e-a1a3bd02bf30
+# ╟─8af12f1c-d35b-4cc9-8185-1bb5adbb69e8
+# ╟─2e8d2fcf-c623-4142-a06e-a1a3bd02bf30
 # ╠═fb1c3580-149a-41d6-97eb-e3ce76be331b
 # ╠═3fa9d05a-a3f6-4e07-9a5d-f53ee2126cae
 # ╠═784b4c3e-bb2a-4940-a83a-ed5e5898dfd4
