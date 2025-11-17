@@ -4,12 +4,18 @@ authors = ["Jürgen Fuhrmann <juergen-fuhrmann@web.de>"]
 version = "0.1.0"
 
 [deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 ExtendableGrids = "cfc395e8-590f-11e8-1f13-43a2532b2fa8"
+HDF5 = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
 LessUnitful = "f29f6376-6e90-4d80-80c9-fb8ec61203d5"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [compat]
+CSV = "0.10.15"
+DataFrames = "1.8.1"
 ExtendableGrids = "1.14.0"
+HDF5 = "0.17.2"
 LessUnitful = "1.2.1"
 Unitful = "1.25.1"
 

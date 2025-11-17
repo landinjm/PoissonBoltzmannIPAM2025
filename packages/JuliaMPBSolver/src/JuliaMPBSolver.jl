@@ -12,4 +12,7 @@ using .Grid
 include("postprocess.jl")
 using .Postprocess
 
+include("data_out.jl")
+using .DataOut
+
 end
