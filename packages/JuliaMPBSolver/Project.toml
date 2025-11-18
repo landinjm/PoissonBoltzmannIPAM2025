@@ -9,7 +9,9 @@ DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 ExtendableGrids = "cfc395e8-590f-11e8-1f13-43a2532b2fa8"
 HDF5 = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
 LessUnitful = "f29f6376-6e90-4d80-80c9-fb8ec61203d5"
+PreallocationTools = "d236fae5-4411-538c-8e31-a6e3d9e00b46"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
+VoronoiFVM = "82b139dc-5afc-11e9-35da-9b9bdfd336f3"
 
 [compat]
 CSV = "0.10.15"
@@ -17,7 +19,9 @@ DataFrames = "1.8.1"
 ExtendableGrids = "1.14.0"
 HDF5 = "0.17.2"
 LessUnitful = "1.2.1"
+PreallocationTools = "0.4.34"
 Unitful = "1.25.1"
+VoronoiFVM = "2.13.0"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

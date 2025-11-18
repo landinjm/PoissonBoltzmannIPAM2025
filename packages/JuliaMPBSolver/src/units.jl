@@ -25,14 +25,27 @@ const angstrom = ufac"Å"
 # Voltage unit
 const V = ufac"V"
 
+# Electron charge
+const e = ph"e"
+
+# Electron surface density
+const el_surface_density = e / nm^2
+
 # Moles
 const mol = ufac"mol"
+
+# Molarity
+const M = mol / dm^3
+
+# Vacuum permittivity
+const vacuum_permittivity = ph"ε_0"
 
 # Thermal energy
 thermal_energy(temperature) = ph"R" * temperature
 RT(x) = thermal_energy(x)
 
 # Export all constants and functions
-export F, K, nm, m, dm, angstrom, V, mol, thermal_energy, RT
+export F,
+  K, nm, m, dm, angstrom, V, mol, vacuum_permittivity, thermal_energy, RT
 
 end

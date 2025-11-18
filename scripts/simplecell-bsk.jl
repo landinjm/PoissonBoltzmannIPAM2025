@@ -4,44 +4,21 @@ Pkg.activate(joinpath(@__DIR__, ".."))
 
 using LinearAlgebra
 using Interpolations
-using VoronoiFVM, ExtendableGrids
-using LaTeXStrings
-using LessUnitful, Unitful
-using PreallocationTools
-using LaTeXStrings
-using DoubleFloats
-using ForwardDiff
+using VoronoiFVM
 using PythonPlot
 using JuliaMPBSolver
 
-begin
-  const F = ph"N_A" * ph"e"
-  const K = ufac"K"
-  const nm = ufac"nm"
-  const m = ufac"m"
-  const dm = ufac"dm"
-  const V = ufac"V"
-  const mol = ufac"mol"
-  const T = (273.15 + 25) * ufac"K"
-  const RT = ph"R" * T
-end
-
-begin
-  const floattype = Float64
-  const L = 10.0nm # computational domain size
-  const nel = 20 # number of electrons/nm^2
-  const lc = 1 * nm # BSK parameter
-  const M_bulk = 1 # (bulk) molarity at center of domain
-  const E0 = floattype(10V / nm) # decrement parameter
-  const a = 5.0 / E0^2 # decrement parameter in χ(E)
-  const q = nel * ph"e" / ufac"nm^2" # surface charge
-  const c̄ = 55.508mol / dm^3 # summary molar concentration
-  const ε_0 = floattype(ph"ε_0")
-end
-
+const nel = 20.0 * JuliaMPBSolver.Units.el_surface_density # number of electrons/nm^2 at interfaces
+const M_bulk = 1 # (bulk) molarity at center of domain
+const E0 = 10JuliaMPBSolver.Units.V / JuliaMPBSolver.Units.nm # decrement parameter
+const a = 5.0 / E0^2 # decrement parameter in χ(E)
+const c̄ = 55.508JuliaMPBSolver.Units.M # summary molar concentration
 const z = [-1, 1]
-const c_bulk = [M_bulk, M_bulk] * mol / dm^3 # bulk  concentrations
-const c0_bulk = c̄ - sum(c_bulk) # solvent bulk molar concentration
+const c_bulk = [M_bulk / abs(z[1]), M_bulk / abs(z[2])] * JuliaMPBSolver.Units.M # bulk  concentrations
+
+begin
+  const lc = 1 * JuliaMPBSolver.Units.nm # BSK parameter
+end
 
 # Parameters
 user_parameters = JuliaMPBSolver.Parameters.UserParameters(
@@ -52,42 +29,30 @@ user_parameters = JuliaMPBSolver.Parameters.UserParameters(
   z,
   c̄,
   c_bulk,
-  c0_bulk,
+  nel,
+  a,
   true,
 )
 
-begin
-  const l_debye = sqrt(
-    (1 + user_parameters.dielectric_susceptibility) * ε_0 * RT /
-    (F^2 * c_bulk[1]),
-  ) # Debye length
-  const dlcap0 = sqrt(
-    2 *
-    (1 + user_parameters.dielectric_susceptibility) *
-    ε_0 *
-    F^2 *
-    c_bulk[1] / RT,
-  ) # Double layer capacitance at point of zero charge (0V)
-end
+computed_parameters =
+  JuliaMPBSolver.Parameters.ComputedParameters(user_parameters)
 
 grid_parameters = JuliaMPBSolver.Grid.GeometricGrid(
-  domain_size = L,
+  domain_size = 10.0 * JuliaMPBSolver.Units.nm,
   refinement = 4,
-  hmin = 1.0e-1 * nm,
-  hmax = 1.0 * nm,
+  hmin = 1.0e-1 * JuliaMPBSolver.Units.nm,
+  hmax = 1.0 * JuliaMPBSolver.Units.nm,
   use_offset = false,
 )
 grid = JuliaMPBSolver.Grid.create_full_cell(grid_parameters)
 X = JuliaMPBSolver.Grid.get_coordinates(grid)
-
-const Y = DiffCache(ones(floattype, length(z))) # place for temporary data in callbacks
 
 function flux!(y, u, edge, data)
   eins = one(eltype(u))
   h = floattype(edgelength(edge))
   E = (u[1, 1] - u[1, 2]) / h
   χ = user_parameters.dielectric_susceptibility / sqrt(eins + a * E^2)
-  ε = (eins + χ) * ε_0
+  ε = (eins + χ) * JuliaMPBSolver.Units.vacuum_permittivity
   y[1] = ε * ((u[1, 1] - u[1, 2]) - lc^2 * (u[2, 1] - u[2, 2]))
   y[2] = u[1, 1] - u[1, 2]
   return nothing
@@ -96,15 +61,13 @@ end
 function reaction!(y, u, node, data)
   tmp = get_tmp(Y, u)
   y[1] =
-    -JuliaMPBSolver.Postprocess.compute_spacecharge(tmp, u[1], user_parameters)
+    -JuliaMPBSolver.Postprocess.compute_spacecharge(
+      tmp,
+      u[1],
+      user_parameters,
+      computed_parameters,
+    )
   y[2] = -u[2]
-  return nothing
-end
-
-function bcondition!(y, u, bnode, data)
-  boundary_neumann!(y, u, bnode, species = 1, region = 2, value = -q)
-  boundary_neumann!(y, u, bnode, species = 1, region = 1, value = q)
-  boundary_dirichlet!(y, u, bnode, species = 2, region = 3, value = 0)
   return nothing
 end
 
@@ -112,10 +75,13 @@ pbsystem = VoronoiFVM.System(
   grid;
   reaction = reaction!,
   flux = flux!,
-  bcondition = bcondition!,
   species = [1, 2],
   valuetype = floattype,
 )
+
+JuliaMPBSolver.Equations.add_boundary_charge!(pbsystem, 1, 2, -nel)
+JuliaMPBSolver.Equations.add_boundary_charge!(pbsystem, 1, 1, nel)
+JuliaMPBSolver.Equations.pin_pressure_value!(pbsystem, 2, 3)
 
 sol = solve(
   pbsystem,
@@ -126,16 +92,19 @@ sol = solve(
 )
 
 function bee!(y, ϕ)
-  N = length(z)
+  N = length(user_parameters.charge_numbers)
   for i in 1:N
-    y[i] = RT * log(c_bulk[i] / c0_bulk) / F - z[i] * ϕ
+    y[i] =
+      JuliaMPBSolver.Units.thermal_energy(user_parameters.temperature) *
+      log(c_bulk[i] / computed_parameters.bulk_solvent_concentration) /
+      JuliaMPBSolver.Units.F - user_parameters.charge_numbers[i] * ϕ
   end
   return nothing
 end
 
 function bee(sol)
   n = size(sol, 2)
-  N = length(z)
+  N = length(user_parameters.charge_numbers)
   e = zeros(N, n)
   y = zeros(N)
   for i in 1:n
@@ -149,8 +118,11 @@ end
 
 nv = nodevolumes(pbsystem)
 
-c =
-  JuliaMPBSolver.Postprocess.compute_concentrations(sol[1, :], user_parameters)
+c = JuliaMPBSolver.Postprocess.compute_concentrations(
+  sol[1, :],
+  user_parameters,
+  computed_parameters,
+)
 
 ε_r =
   user_parameters.dielectric_susceptibility ./ (
@@ -170,9 +142,10 @@ function plotsol(sol; size = (600, 400))
   c = JuliaMPBSolver.Postprocess.compute_concentrations(
     sol[1, :],
     user_parameters,
+    computed_parameters,
   )
-  cm = c[1, :] ⋅ nv / (mol / dm^3) / L
-  cp = c[2, :] ⋅ nv / (mol / dm^3) / L
+  cm = c[1, :] ⋅ nv / (JuliaMPBSolver.Units.M) / L
+  cp = c[2, :] ⋅ nv / (JuliaMPBSolver.Units.M) / L
   c0 = -(sum(c, dims = 1) .- c̄)
   e = bee(sol)
   ax1.set_title(
@@ -217,21 +190,21 @@ function plotsol(sol; size = (600, 400))
 
   ax2.plot(
     X / nm,
-    c[1, :] / (mol / dm^3),
+    c[1, :] / (JuliaMPBSolver.Units.M),
     color = "blue",
     linewidth = 2,
     label = L"c^-",
   )
   ax2.plot(
     X / nm,
-    c[2, :] / (mol / dm^3),
+    c[2, :] / (JuliaMPBSolver.Units.M),
     color = "red",
     linewidth = 2,
     label = L"c^+",
   )
   ax2.plot(
     X / nm,
-    c0[1, :] / (mol / dm^3),
+    c0[1, :] / (JuliaMPBSolver.Units.M),
     color = "green",
     linewidth = 2,
     label = L"c_{solvent}",

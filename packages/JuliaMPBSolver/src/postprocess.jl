@@ -7,6 +7,7 @@ function compute_mole_fractions!(
   mole_fractions::AbstractVector,
   electric_potential,
   user_parameters::UserParameters,
+  computed_parameters::ComputedParameters,
 )
   n_species = length(user_parameters.charge_numbers)
 
@@ -18,7 +19,7 @@ function compute_mole_fractions!(
         -user_parameters.charge_numbers[i] * electric_potential * F /
         RT(user_parameters.temperature),
       ) * user_parameters.bulk_ion_concentrations[i] /
-      user_parameters.bulk_solvent_concentration
+      computed_parameters.bulk_solvent_concentration
   end
 
   if user_parameters.use_bikerman_model
@@ -32,6 +33,7 @@ function compute_concentrations!(
   concentrations::Matrix{<:AbstractFloat},
   electric_potential,
   user_parameters::UserParameters,
+  computed_parameters::ComputedParameters,
 )
   n_species = length(user_parameters.charge_numbers)
   n_nodes = length(electric_potential)
@@ -46,6 +48,7 @@ function compute_concentrations!(
       point_wise_concentrations,
       electric_potential[i],
       user_parameters,
+      computed_parameters,
     )
     for j in 1:n_species
       concentrations[j, i] =
@@ -59,13 +62,19 @@ end
 function compute_concentrations(
   electric_potential,
   user_parameters::UserParameters,
+  computed_parameters::ComputedParameters,
 )
   n_species = length(user_parameters.charge_numbers)
   n_nodes = length(electric_potential)
 
   concentrations = zeros(n_species, n_nodes)
 
-  compute_concentrations!(concentrations, electric_potential, user_parameters)
+  compute_concentrations!(
+    concentrations,
+    electric_potential,
+    user_parameters,
+    computed_parameters,
+  )
 
   return concentrations
 end
@@ -74,13 +83,19 @@ function compute_spacecharge(
   mole_fractions,
   electric_potential,
   user_parameters::UserParameters,
+  computed_parameters::ComputedParameters,
 )
   # TODO: This function is slow because of the dynamic allocation of arrays.
   # This won't fly with 2D and 3D problems. We need to pre-allocate the arrays
   # and pass them as arguments.
   n_species = length(user_parameters.charge_numbers)
 
-  compute_mole_fractions!(mole_fractions, electric_potential, user_parameters)
+  compute_mole_fractions!(
+    mole_fractions,
+    electric_potential,
+    user_parameters,
+    computed_parameters,
+  )
 
   space_charge = zero(electric_potential)
 
@@ -102,6 +117,45 @@ function compute_gradient(y::AbstractVector, x::AbstractVector)
   @assert length(y) == length(x)
 
   return (y[2:end] - y[1:(end-1)]) ./ (x[2:end] - x[1:(end-1)])
+end
+
+function compute_electric_susceptibility(
+  electric_field,
+  ones,
+  user_parameters::UserParameters,
+)
+  return user_parameters.dielectric_susceptibility ./ sqrt.(
+    ones .+
+    user_parameters.electric_susceptibility_decrement_parameter .*
+    electric_field .^ 2,
+  )
+end
+
+function compute_relative_permittivity(
+  electric_field,
+  ones,
+  user_parameters::UserParameters,
+)
+  return ones +
+         compute_electric_susceptibility(electric_field, ones, user_parameters)
+end
+
+function compute_relative_permittivity(electric_susceptibility, ones)
+  return ones + electric_susceptibility
+end
+
+function compute_permittivity(
+  electric_field,
+  ones,
+  user_parameters::UserParameters,
+)
+  return compute_relative_permittivity(electric_field, ones, user_parameters) *
+         Units.vacuum_permittivity
+end
+
+function compute_permittivity(electric_susceptibility, ones)
+  return compute_relative_permittivity(electric_susceptibility, ones) *
+         Units.vacuum_permittivity
 end
 
 export compute_mole_fractions!,

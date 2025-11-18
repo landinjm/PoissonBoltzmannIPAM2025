@@ -1,89 +1,165 @@
-module equations
+module Equations
 
-#placeholder params for now TODO: Implement params module elsewhere
-struct PBParams{T<:Real}
-  z::Vector{T}
-  c_bulk::Vector{T}
-  c0_bulk::Vector{T}
-  cbar::T
-  T::T
-  F::T
-end
+using VoronoiFVM
+using ExtendableGrids
+using PreallocationTools
 
-"""
-    molefractions!(phi, z, c_bulk, c0_bulk, Temp; f_model=false) 
+using ..Parameters
+using ..Units
+using ..Grid
+using ..Postprocess
 
-Compute mole fraction at phi (potential), z (charges), c_bulk (bulk conc.),
-c0_bulk (reference) and Temp (temperature)
-f_model=false -> Poisson Boltzmann
-f_model=true -> Bikerman
-
-Adapting these from the simplecell bsk code for the PB equations implemented
-in the notebook; have to create other modified equations from the discussion
-for pressure etc
-"""
-function χ_from_E() #susceptibility calculation from applied Field
-  #TODO: implementation
-end
-
-function molefractions!(
-  phi,
-  z::AbstractVector,
-  c_bulk::AbstractVector,
-  c0_bulk::AbstractVector,
-  T;
-  f_model::Bool = false,
+function add_dirichlet_bc!(
+  system::VoronoiFVM.AbstractSystem,
+  field_id::Int,
+  face_id::Int,
+  value::AbstractFloat,
 )
-  @assert length(z) == length(c_bulk) == length(c0_bulk)
-  η = (z .* (phi .* F)) ./ (R * T)
-  common_numerator = exp.((z .* (phi .* F)) ./ (R * T)) .* (c_bulk ./ c0_bulk)
-
-  if !f_model
-    model_denom = one(eltype(phi))  # 1 for Poisson-Boltzmann
-  else
-    # sum over species
-    model_denom = one(eltype(phi)) .+ sum(common_numerator)  # for Bikerman
-  end
-
-  return common_numerator ./ model_denom
+  # Note that because this relies on the equation system being created,
+  # method must be called after create_equation_system
+  boundary_dirichlet!(system, field_id, face_id, value)
+  return nothing
 end
 
-function spacecharge!(
-  y::AbstractVector{T},
-  ϕ::T,
-  params::PBParams;
-  f_model::Bool = false,
-) where {T<:Real}
-  # Call molefractions with unpacked parameters #TODO: check
-  y .= molefractions!(
-    ϕ,
-    params.z,
-    params.c_bulk,
-    params.c0_bulk,
-    params.T;
-    f_model = f_model,
+function add_boundary_voltage!(
+  system::VoronoiFVM.AbstractSystem,
+  field_id::Int,
+  face_id::Int,
+  value::AbstractFloat,
+)
+  add_dirichlet_bc!(system, field_id, face_id, value)
+  return nothing
+end
+
+function pin_pressure_value!(
+  system::VoronoiFVM.AbstractSystem,
+  field_id::Int,
+  face_id::Int,
+)
+  add_dirichlet_bc!(system, field_id, face_id, 0.0)
+  return nothing
+end
+
+function add_neumann_bc!(
+  system::VoronoiFVM.AbstractSystem,
+  field_id::Int,
+  face_id::Int,
+  value::AbstractFloat,
+)
+  # Note that because this relies on the equation system being created,
+  # method must be called after create_equation_system
+  boundary_neumann!(system, field_id, face_id, value)
+  return nothing
+end
+
+function add_boundary_charge!(
+  system::VoronoiFVM.AbstractSystem,
+  field_id::Int,
+  face_id::Int,
+  value::AbstractFloat,
+)
+  add_neumann_bc!(system, field_id, face_id, value)
+  return nothing
+end
+
+function create_equation_system(
+  grid::ExtendableGrid,
+  user_parameters::UserParameters,
+  computed_parameters::ComputedParameters,
+)
+  # Determine the precision of the floating-point numbers from the user parameters
+  float_type = eltype(user_parameters.temperature)
+
+  # Create a tmp vector for various function evaluations
+  tmp = DiffCache(ones(float_type, length(user_parameters.charge_numbers)))
+
+  function flux!(y, u, edge, data)
+    ones = one(eltype(u))
+    edge_length = float_type(edgelength(edge))
+    electric_field = (u[1, 1] - u[1, 2]) / edge_length
+
+    permittivity =
+      Postprocess.compute_permittivity(electric_field, ones, user_parameters)
+
+    y[1] = permittivity * (u[1, 1] - u[1, 2])
+
+    return nothing
+  end
+
+  function reaction!(y, u, node, data)
+    local_tmp = get_tmp(tmp, u)
+    y[1] =
+      -Postprocess.compute_spacecharge(
+        local_tmp,
+        u[1],
+        user_parameters,
+        computed_parameters,
+      )
+    return nothing
+  end
+
+  system = VoronoiFVM.System(
+    grid;
+    reaction = reaction!,
+    flux = flux!,
+    species = [1],
+    valuetype = float_type,
   )
-  sumyz = zero(ϕ)
-  for i in 1:length(params.z)
-    sumyz += params.z[i] * y[i]
-  end
-  return params.F * params.cbar * sumyz
+
+  return system
 end
 
-function pb_rhs(phi, z, c_bulk, cbar, c0_bulk, T)
-  let y = similar(z)
-    params = PBParams(z, c_bulk, c0_bulk, cbar, T, F)
-    spacecharge!(y, phi, params; f_model = false)
-  end
+function solve_equation_system(
+  system::VoronoiFVM.AbstractSystem;
+  inival = 0.1,
+  verbose = "n",
+  damp_initial = 0.1,
+  maxiters = 1000,
+)
+  return solve(
+    system;
+    inival = inival,
+    verbose = verbose,
+    damp_initial = damp_initial,
+    maxiters = maxiters,
+  )
 end
 
-function bikerman_rhs(phi, z, c_bulk, cbar, c0_bulk, T)
-  let y = similar(z)
-    params = PBParams(z, c_bulk, c0_bulk, cbar, T, F)
-    spacecharge!(y, phi, params; f_model = true)
-  end
+function create_and_run_full_cell_problem(
+  grid_paramters::GeometricGrid,
+  user_parameters::UserParameters,
+  computed_parameters::ComputedParameters,
+)
+  grid = create_full_cell(grid_paramters)
+  system = create_equation_system(grid, user_parameters, computed_parameters)
+
+  add_boundary_charge!(system, 1, 2, -user_parameters.boundary_electron_density)
+  add_boundary_charge!(system, 1, 1, user_parameters.boundary_electron_density)
+
+  solution = solve_equation_system(system)
+
+  X = get_coordinates(grid)
+
+  nodal_volumes = nodevolumes(system)
+
+  electric_field = Postprocess.compute_gradient(solution[1, :], X)
+
+  one_array = ones(length(electric_field))
+
+  relative_permittivity = Postprocess.compute_relative_permittivity(
+    electric_field,
+    one_array,
+    user_parameters,
+  )
+
+  return solution, X, nodal_volumes, relative_permittivity
 end
 
-export χ_from_E, molefractions!, pb_rhs, bikerman_rhs
+export add_boundary_voltage!,
+  pin_pressure_value!,
+  add_boundary_charge!,
+  create_equation_system,
+  solve_equation_system,
+  create_and_run_full_cell_problem
 
 end

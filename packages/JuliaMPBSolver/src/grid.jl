@@ -100,6 +100,11 @@ function is_equivalent(
          num_bfaces(grid) == n_boundary_faces
 end
 
-export GeometricGrid, create_grid, is_equivalent
+export GeometricGrid,
+  create_grid,
+  create_half_cell,
+  create_full_cell,
+  get_coordinates,
+  is_equivalent
 
 end
