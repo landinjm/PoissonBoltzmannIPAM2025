@@ -476,22 +476,8 @@ const idx = unknown_indices(unknowns(sys3_0));
 # ╔═╡ ca58971d-515e-491b-b7b8-2ebed16409c4
 idx[2, i3]
 
-# ╔═╡ 4445180b-3e7b-4315-8d6e-37c02a9886eb
-md"""
-``M_{avg}``: 
-$(@bind M3_avg confirm(PlutoUI.Slider(0.1:0.1:10, default=5, show_value=true),label="Go"))
-``n_e``: $(@bind n3_e confirm(PlutoUI.Slider(1:1:20, default=10, show_value=true),label="Go"))
-"""
-
-# ╔═╡ 30a93ebe-43a6-4ce9-afe5-de8cb3cc9a5d
-c3_avg = fill(M3_avg * mol / dm^3, 2)
-
-# ╔═╡ 633ec843-2aaa-46b6-beda-cd1f2e0ab430
-data3 = PBData(c_avg = c3_avg, c_ref = 0.5 * c3_avg, q = surfcharge(n3_e))
-
 # ╔═╡ 37581680-dcfd-46f7-abe3-7b64338a5c07
-function xreaction!(f, u, sys)
-    data = data3 #VoronoiFVM.data(sys)
+function xreaction!(f, u, sys, data)
     (; cache, iϕ, N, z, F, c_avg, c̄) = data
     y = get_tmp(cache, u)
     c_ref = [u[idx[ic + iϕ, i3]] for ic in 1:(N - 1)]
@@ -519,6 +505,19 @@ function xreaction!(f, u, sys)
     return nothing
 end
 
+
+# ╔═╡ 4445180b-3e7b-4315-8d6e-37c02a9886eb
+md"""
+``M_{avg}``: 
+$(@bind M3_avg confirm(PlutoUI.Slider(0.1:0.1:10, default=5, show_value=true),label="Go"))
+``n_e``: $(@bind n3_e confirm(PlutoUI.Slider(1:1:20, default=10, show_value=true),label="Go"))
+"""
+
+# ╔═╡ 30a93ebe-43a6-4ce9-afe5-de8cb3cc9a5d
+c3_avg = fill(M3_avg * mol / dm^3, 2)
+
+# ╔═╡ 633ec843-2aaa-46b6-beda-cd1f2e0ab430
+data3 = PBData(c_avg = c3_avg, c_ref = 0.5 * c3_avg, q = surfcharge(n3_e))
 
 # ╔═╡ e5b3dd26-7df7-41cf-ad5f-887d95f73135
 sys3 = ICMPBSystem(data = data3, generic = xreaction!)
