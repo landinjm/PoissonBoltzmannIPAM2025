@@ -64,4 +64,9 @@ You can then open one of the notebooks or execute one of the scripts.
 For workflow hints, see
 - https://modernjuliaworkflows.org/
 - https://j-fu.github.io/marginalia/julia/
-  
+
+## Acknowledgements
+These codes are being developed thanks to [IPAM Long Program - Bridging 
+the Gap: Transitioning from Deterministic to Stochastic Interaction 
+Modeling in Electrochemistry](https://www.ipam.ucla.edu/programs/long-programs/bridging-the-gap-transitioning-from-deterministic-to-stochastic-interaction-modeling-in-electrochemistry/)
+
