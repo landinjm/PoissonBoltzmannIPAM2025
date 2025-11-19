@@ -1,0 +1,12 @@
+name = "JuliaDraftSolver"
+uuid = "3ec8c478-c4c8-11f0-9b3e-214ae401bce1"
+version = "0.1.0"
+authors = ["Jürgen Fuhrmann <juergen-fuhrmann@web.de>"]
+
+[deps]
+ExtendableGrids = "cfc395e8-590f-11e8-1f13-43a2532b2fa8"
+VoronoiFVM = "82b139dc-5afc-11e9-35da-9b9bdfd336f3"
+
+[compat]
+ExtendableGrids = "1.14.0"
+VoronoiFVM = "2.12.2"

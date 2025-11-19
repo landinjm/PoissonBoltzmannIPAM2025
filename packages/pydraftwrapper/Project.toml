@@ -1,0 +1,6 @@
+[deps]
+JuliaDraftSolver = "3ec8c478-c4c8-11f0-9b3e-214ae401bce1"
+PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
+
+[sources]
+JuliaDraftSolver = {path = "../JuliaDraftSolver"}
