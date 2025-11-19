@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.19
+# v0.20.21
 
 using Markdown
 using InteractiveUtils
@@ -164,9 +164,6 @@ md"""
 
 """
 
-# ╔═╡ c2a991c2-c09e-4cbc-8595-de31b11f258c
-const f_model = 1
-
 # ╔═╡ 9e5c58ed-af67-4ea4-bae8-e4b75ecd08cd
 begin
   const floattype = Float64
@@ -241,6 +238,7 @@ md"""
 const Y = DiffCache(ones(floattype, length(z))) # place for temporary data in callbacks
 
 # ╔═╡ 6d26ffef-2456-4f63-b6d7-fc391b760cb7
+#=╠═╡
 function molfractions!(y, ϕ)
   N = length(z)
   for i in 1:N
@@ -252,6 +250,7 @@ function molfractions!(y, ϕ)
   end
   return nothing
 end
+  ╠═╡ =#
 
 # ╔═╡ ffbf3c15-9397-4a07-a48f-458c963fe613
 function flux!(y, u, edge, data)
@@ -266,6 +265,7 @@ function flux!(y, u, edge, data)
 end
 
 # ╔═╡ d0ea64ed-d351-401e-bfb7-bdf1fbc7227d
+#=╠═╡
 function spacecharge!(y, ϕ)
   N = length(z)
   molfractions!(y, ϕ)
@@ -275,14 +275,17 @@ function spacecharge!(y, ϕ)
   end
   return F * c̄ * sumyz
 end
+  ╠═╡ =#
 
 # ╔═╡ 4b497d98-e874-4218-b908-19b792eb9bfa
+#=╠═╡
 function reaction!(y, u, node, data)
   tmp = get_tmp(Y, u)
   y[1] = -spacecharge!(tmp, u[1])
   y[2] = -u[2]
   return nothing
 end
+  ╠═╡ =#
 
 # ╔═╡ b6f0a027-c4ed-4a9d-81a2-033421a2beea
 function bcondition!(y, u, bnode, data)
@@ -293,6 +296,7 @@ function bcondition!(y, u, bnode, data)
 end
 
 # ╔═╡ c92d5e01-6988-4cbf-bd2f-bdef7bafa86d
+#=╠═╡
 pbsystem = VoronoiFVM.System(
   grid;
   reaction = reaction!,
@@ -301,6 +305,7 @@ pbsystem = VoronoiFVM.System(
   species = [1, 2],
   valuetype = floattype,
 )
+  ╠═╡ =#
 
 # ╔═╡ 5ffcb2d2-26c8-4e56-8ca8-247f415d6f82
 md"""
@@ -308,6 +313,7 @@ md"""
 """
 
 # ╔═╡ f81e55a2-a4fd-4f58-a071-b7f012368dba
+#=╠═╡
 sol = solve(
   pbsystem,
   inival = 0.1,
@@ -315,6 +321,7 @@ sol = solve(
   damp_initial = 0.1,
   maxiters = 1000,
 )
+  ╠═╡ =#
 
 # ╔═╡ ebf55449-0e3e-4a95-8010-ee6c3862cfdf
 md"""
@@ -322,6 +329,7 @@ md"""
 """
 
 # ╔═╡ 33c57d77-17cf-4dfa-8dc8-2346623dbae9
+#=╠═╡
 function concentrations(sol)
   n = size(sol, 2)
   N = length(z)
@@ -335,6 +343,7 @@ function concentrations(sol)
   end
   return c
 end
+  ╠═╡ =#
 
 # ╔═╡ 00e6a252-2896-40b8-a34f-55fb2780c30c
 function bee!(y, ϕ)
@@ -361,9 +370,12 @@ function bee(sol)
 end
 
 # ╔═╡ bd6b0867-c3c8-4d3c-aee6-213cd87dbfc2
+#=╠═╡
 nv = nodevolumes(pbsystem)
+  ╠═╡ =#
 
 # ╔═╡ 950a9a27-1326-40fb-9f83-1b19a9c91828
+#=╠═╡
 function spacecharges(sol)
   c = concentrations(sol)
   n = size(sol, 2)
@@ -377,6 +389,7 @@ function spacecharges(sol)
   cdens = [spacecharge!(tmp, sol[1, i]) for i in 1:n]
   return cdens ⋅ nv0, cdens ⋅ nvl
 end
+  ╠═╡ =#
 
 # ╔═╡ 43facc9c-dee8-4c59-9ff9-85588a7a1614
 md"""
@@ -384,21 +397,27 @@ Compare calculated space charges with electrode charges
 """
 
 # ╔═╡ e6ccd7bd-ade2-452c-9142-ff7f9a5bd858
+#=╠═╡
 spacecharges(sol)
+  ╠═╡ =#
 
 # ╔═╡ 9fab97f7-cd40-41b7-bf7b-e9f7fa8ef8ad
 (q, -q)
 
 # ╔═╡ 3c8ef4db-b32e-43df-bb7e-2b698446c9ba
+#=╠═╡
 c = concentrations(sol)
+  ╠═╡ =#
 
 # ╔═╡ d74a2d3a-1f00-44f4-8f9d-afa4ef5561b1
+#=╠═╡
 ε_r =
   χ_S ./ (
     a *
     ((sol[1, 2:end] - sol[1, 1:(end-1)]) ./ (X[2:end] - X[1:(end-1)])) .^ 2 .+
     1
   ) .+ 1
+  ╠═╡ =#
 
 # ╔═╡ 8cf198aa-d4a5-46bc-af89-fc4a3256ceb6
 md"""
@@ -406,6 +425,7 @@ md"""
 """
 
 # ╔═╡ 4426f9d5-b580-42e3-9a19-f1f03b33e0b1
+#=╠═╡
 function plotsol(sol; size = (600, 400))
   PythonPlot.clf()
   fig, ax = pyplot.subplots(2, 1)
@@ -486,9 +506,12 @@ function plotsol(sol; size = (600, 400))
   savefig("simplecell-bsk.jpg", dpi = 300)
   return PythonPlot.gcf()
 end
+  ╠═╡ =#
 
 # ╔═╡ 33de30bb-1195-4b92-a8cf-70dfe4878755
+#=╠═╡
 plotsol(sol)
+  ╠═╡ =#
 
 # ╔═╡ 483da60f-8695-45cd-8ac7-6da49405030d
 md"""
@@ -559,6 +582,7 @@ begin
 end;
 
 # ╔═╡ 31013a97-fc82-4ad2-a14e-81bc93e36b8d
+#=╠═╡
 let
   mb = M_bulk
   floataside(
@@ -572,9 +596,12 @@ let
     """,
   )
 end
+  ╠═╡ =#
 
 # ╔═╡ 124fec69-a922-48f4-8449-7960fdee42be
+#=╠═╡
 floataside(plotsol(sol; size = (400, 400)), top = 200)
+  ╠═╡ =#
 
 # ╔═╡ b8fd36a7-d8d1-45f7-b66e-df9132168bfc
 # https://discourse.julialang.org/t/adding-a-restart-process-button-in-pluto/76812/5
@@ -600,6 +627,20 @@ restart_button() = html"""
 </script>
 """;
 
+# ╔═╡ 2dd9554c-8b48-4186-b3e1-9d5db0ffdfa0
+#=╠═╡
+begin
+    @bind f_model Slider(0:0.01:1, default=1, show_value=true)
+end
+
+  ╠═╡ =#
+
+# ╔═╡ c2a991c2-c09e-4cbc-8595-de31b11f258c
+# ╠═╡ disabled = true
+#=╠═╡
+const f_model = 1
+  ╠═╡ =#
+
 # ╔═╡ Cell order:
 # ╠═a70cef7d-2a2f-4155-bdf3-fec9df94c63f
 # ╠═f6947f22-4c05-4cf6-8380-4aace64fe7d3
@@ -617,6 +658,7 @@ restart_button() = html"""
 # ╠═ad1ca3eb-6020-4994-93a5-0cde9c92318d
 # ╟─f1e8c7c3-98d8-45fa-85d3-c4ebafecdd1d
 # ╟─d4c9d16a-98e8-44e0-bd15-f81dfc71a75d
+# ╠═2dd9554c-8b48-4186-b3e1-9d5db0ffdfa0
 # ╠═c2a991c2-c09e-4cbc-8595-de31b11f258c
 # ╠═9e5c58ed-af67-4ea4-bae8-e4b75ecd08cd
 # ╟─31013a97-fc82-4ad2-a14e-81bc93e36b8d
