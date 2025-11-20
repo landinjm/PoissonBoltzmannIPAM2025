@@ -1,0 +1,9 @@
+{
+    "packages": {
+        "JuliaMPBSolver": {
+            "url": "https://github.com/IPAM-ECH2025/PoissonBoltzmannIPAM2025.git",
+            "subdir": "packages/JuliaMPBSolver",
+            "uuid": "d8b18f01-5396-498d-b34d-247825c18ff0"
+        }
+    }
+}
