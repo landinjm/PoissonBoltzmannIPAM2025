@@ -28,6 +28,9 @@ user_parameters = JuliaMPBSolver.Parameters.UserParameters(
     nel,
     a,
     true,
+    false,
+    false,
+    0.0,
 )
 
 computed_parameters =

@@ -16,10 +16,6 @@ const c̄ = 55.508JuliaMPBSolver.Units.M # summary molar concentration
 const z = [-1, 1]
 const c_bulk = [M_bulk / abs(z[1]), M_bulk / abs(z[2])] * JuliaMPBSolver.Units.M # bulk  concentrations
 
-begin
-    const lc = 1 * JuliaMPBSolver.Units.nm # BSK parameter
-end
-
 # Parameters
 user_parameters = JuliaMPBSolver.Parameters.UserParameters(
     273.15 + 25 * JuliaMPBSolver.Units.K,
@@ -32,6 +28,9 @@ user_parameters = JuliaMPBSolver.Parameters.UserParameters(
     nel,
     a,
     true,
+    false,
+    true,
+    1 * JuliaMPBSolver.Units.nm,
 )
 
 computed_parameters =
@@ -44,51 +43,12 @@ grid_parameters = JuliaMPBSolver.Grid.GeometricGrid(
     hmax = 1.0 * JuliaMPBSolver.Units.nm,
     use_offset = false,
 )
-grid = JuliaMPBSolver.Grid.create_full_cell(grid_parameters)
-X = JuliaMPBSolver.Grid.get_coordinates(grid)
 
-function flux!(y, u, edge, data)
-    eins = one(eltype(u))
-    h = floattype(edgelength(edge))
-    E = (u[1, 1] - u[1, 2]) / h
-    χ = user_parameters.dielectric_susceptibility / sqrt(eins + a * E^2)
-    ε = (eins + χ) * JuliaMPBSolver.Units.vacuum_permittivity
-    y[1] = ε * ((u[1, 1] - u[1, 2]) - lc^2 * (u[2, 1] - u[2, 2]))
-    y[2] = u[1, 1] - u[1, 2]
-    return nothing
-end
-
-function reaction!(y, u, node, data)
-    tmp = get_tmp(Y, u)
-    y[1] =
-        -JuliaMPBSolver.Postprocess.compute_spacecharge(
-        tmp,
-        u[1],
-        user_parameters,
-        computed_parameters,
-    )
-    y[2] = -u[2]
-    return nothing
-end
-
-pbsystem = VoronoiFVM.System(
-    grid;
-    reaction = reaction!,
-    flux = flux!,
-    species = [1, 2],
-    valuetype = floattype,
-)
-
-JuliaMPBSolver.Equations.add_boundary_charge!(pbsystem, 1, 2, -nel)
-JuliaMPBSolver.Equations.add_boundary_charge!(pbsystem, 1, 1, nel)
-JuliaMPBSolver.Equations.pin_pressure_value!(pbsystem, 2, 3)
-
-sol = solve(
-    pbsystem,
-    inival = 0.1,
-    verbose = "n",
-    damp_initial = 0.1,
-    maxiters = 1000,
+solution, X, nv, ε_r =
+    JuliaMPBSolver.Equations.create_and_run_full_cell_problem(
+    grid_parameters,
+    user_parameters,
+    computed_parameters,
 )
 
 function bee!(y, ϕ)
@@ -116,21 +76,6 @@ function bee(sol)
     return e
 end
 
-nv = nodevolumes(pbsystem)
-
-c = JuliaMPBSolver.Postprocess.compute_concentrations(
-    sol[1, :],
-    user_parameters,
-    computed_parameters,
-)
-
-ε_r =
-    user_parameters.dielectric_susceptibility ./ (
-    a *
-        ((sol[1, 2:end] - sol[1, 1:(end - 1)]) ./ (X[2:end] - X[1:(end - 1)])) .^ 2 .+
-        1
-) .+ 1
-
 function plotsol(sol; size = (600, 400))
     PythonPlot.clf()
     fig, ax = pyplot.subplots(2, 1)
@@ -144,16 +89,22 @@ function plotsol(sol; size = (600, 400))
         user_parameters,
         computed_parameters,
     )
-    cm = c[1, :] ⋅ nv / (JuliaMPBSolver.Units.M) / L
-    cp = c[2, :] ⋅ nv / (JuliaMPBSolver.Units.M) / L
+    cm = c[1, :] ⋅ nv / (JuliaMPBSolver.Units.M) / grid_parameters.domain_size
+    cp = c[2, :] ⋅ nv / (JuliaMPBSolver.Units.M) / grid_parameters.domain_size
     c0 = -(sum(c, dims = 1) .- c̄)
     e = bee(sol)
     ax1.set_title(
         "ϕ∈$(round.(Float64.(extrema(sol[1, :])), sigdigits = 3)), ε_r ∈$(round.(Float64.(extrema(ε_r)), sigdigits = 3))",
     )
-    ax1.plot(X / nm, sol[1, :], color = "green", linewidth = 2, label = "ϕ")
     ax1.plot(
-        X / nm,
+        X / JuliaMPBSolver.Units.nm,
+        sol[1, :],
+        color = "green",
+        linewidth = 2,
+        label = "ϕ",
+    )
+    ax1.plot(
+        X / JuliaMPBSolver.Units.nm,
         e[1, :],
         color = "blue",
         linewidth = 2,
@@ -161,7 +112,7 @@ function plotsol(sol; size = (600, 400))
         linestyle = "dotted",
     )
     ax1.plot(
-        X / nm,
+        X / JuliaMPBSolver.Units.nm,
         e[2, :],
         color = "red",
         linewidth = 2,
@@ -169,7 +120,7 @@ function plotsol(sol; size = (600, 400))
         label = L"ψ^+",
     )
     ax1r.plot(
-        X[1:(end - 1)] / nm,
+        X[1:(end - 1)] / JuliaMPBSolver.Units.nm,
         ε_r,
         color = "pink",
         linewidth = 3,
@@ -189,21 +140,21 @@ function plotsol(sol; size = (600, 400))
     ax2.set_ylim(0, 60)
 
     ax2.plot(
-        X / nm,
+        X / JuliaMPBSolver.Units.nm,
         c[1, :] / (JuliaMPBSolver.Units.M),
         color = "blue",
         linewidth = 2,
         label = L"c^-",
     )
     ax2.plot(
-        X / nm,
+        X / JuliaMPBSolver.Units.nm,
         c[2, :] / (JuliaMPBSolver.Units.M),
         color = "red",
         linewidth = 2,
         label = L"c^+",
     )
     ax2.plot(
-        X / nm,
+        X / JuliaMPBSolver.Units.nm,
         c0[1, :] / (JuliaMPBSolver.Units.M),
         color = "green",
         linewidth = 2,
@@ -216,4 +167,4 @@ function plotsol(sol; size = (600, 400))
     return PythonPlot.gcf()
 end
 
-plotsol(sol)
+plotsol(solution)

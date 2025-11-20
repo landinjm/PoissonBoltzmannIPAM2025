@@ -2,7 +2,7 @@ module Grid
 
 using ExtendableGrids
 
-struct GeometricGrid
+Base.@kwdef struct GeometricGrid
     domain_size::AbstractFloat
     refinement::Int
     hmin::AbstractFloat
@@ -10,14 +10,11 @@ struct GeometricGrid
     use_offset::Bool
 end
 
-function GeometricGrid(;
-        domain_size::AbstractFloat,
-        refinement::Int,
-        hmin::AbstractFloat,
-        hmax::AbstractFloat,
-        use_offset::Bool,
-    )
-    return GeometricGrid(domain_size, refinement, hmin, hmax, use_offset)
+Base.@kwdef struct UniformGrid
+    domain_size::AbstractFloat
+    refinement::Int
+    n_points::Int
+    use_offset::Bool
 end
 
 function add_boundary_face!(
@@ -75,6 +72,28 @@ function create_full_cell(grid::GeometricGrid)
     x_right =
         geomspace(grid.domain_size / 2.0, grid.domain_size, local_hmax, local_hmin)
     x = glue(x_left, x_right)
+
+    # Create the simplex grid
+    x = simplexgrid(x)
+
+    # Add a face to the grid in the middle
+    add_boundary_face!(x, grid.domain_size / 2, 3, 1.0e-2 * local_hmin)
+
+    return x
+end
+
+function create_full_cell(grid::UniformGrid)
+    n_local = grid.n_points * 2^grid.refinement + 1
+    local_hmin = grid.domain_size / n_local
+
+    # Create a little offset
+    offset = 0.0f0
+    if grid.use_offset
+        offset = 1.0e-3 * grid.domain_size
+    end
+
+    # Create the uniform spacing
+    x = range(0, grid.domain_size, length = n_local)
 
     # Create the simplex grid
     x = simplexgrid(x)

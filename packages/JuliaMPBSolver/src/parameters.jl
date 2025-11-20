@@ -13,6 +13,9 @@ struct UserParameters{F <: AbstractFloat, I <: Integer}
     boundary_electron_density::F
     electric_susceptibility_decrement_parameter::F
     use_bikerman_model::Bool
+    use_pressure_poisson::Bool
+    use_bazant_storey_kornyshev::Bool
+    bazant_storey_kornyshev_parameter::F
 end
 
 struct ComputedParameters{F <: AbstractFloat}
@@ -31,7 +34,10 @@ function UserParameters(;
         bulk_ion_concentrations::AbstractVector{<:AbstractFloat},
         boundary_electron_density::AbstractFloat,
         electric_susceptibility_decrement_parameter::AbstractFloat,
-        use_bikerman_model::Bool,
+        use_bikerman_model::Bool = false,
+        use_pressure_poisson::Bool = false,
+        use_bazant_storey_kornyshev::Bool = false,
+        bazant_storey_kornyshev_parameter::AbstractFloat = 0.0,
     )
     @assert dot(bulk_ion_concentrations, charge_numbers) == 0
     return UserParameters(
@@ -45,6 +51,9 @@ function UserParameters(;
         boundary_electron_density,
         electric_susceptibility_decrement_parameter,
         use_bikerman_model,
+        use_pressure_poisson,
+        use_bazant_storey_kornyshev,
+        bazant_storey_kornyshev_parameter,
     )
 end
 
