@@ -4,5 +4,5 @@
 
 ```
 bash> source setup.sh
-bash> python test.sh
+bash> python test.py
 ```
