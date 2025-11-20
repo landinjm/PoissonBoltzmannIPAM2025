@@ -1,0 +1,6 @@
+[deps]
+JuliaMPBSolver = "d8b18f01-5396-498d-b34d-247825c18ff0"
+PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
+
+[sources]
+JuliaMPBSolver = {path = "../JuliaMPBSolver"}

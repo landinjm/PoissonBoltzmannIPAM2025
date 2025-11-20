@@ -1,14 +1,17 @@
 name = "JuliaMPBSolver"
 uuid = "d8b18f01-5396-498d-b34d-247825c18ff0"
-authors = ["Jürgen Fuhrmann <juergen-fuhrmann@web.de>"]
 version = "0.1.0"
+authors = ["Jürgen Fuhrmann <juergen-fuhrmann@web.de>"]
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 ExtendableGrids = "cfc395e8-590f-11e8-1f13-43a2532b2fa8"
 HDF5 = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
+InteractiveUtils = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 LessUnitful = "f29f6376-6e90-4d80-80c9-fb8ec61203d5"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Markdown = "d6f4376e-aef5-505a-96c1-9c027394607a"
 PreallocationTools = "d236fae5-4411-538c-8e31-a6e3d9e00b46"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 VoronoiFVM = "82b139dc-5afc-11e9-35da-9b9bdfd336f3"
@@ -18,10 +21,14 @@ CSV = "0.10.15"
 DataFrames = "1.8.1"
 ExtendableGrids = "1.14.0"
 HDF5 = "0.17.2"
+InteractiveUtils = "1.11.0"
 LessUnitful = "1.2.1"
+LinearAlgebra = "1.11.0"
+Markdown = "1.11.0"
 PreallocationTools = "0.4.34"
 Unitful = "1.25.1"
 VoronoiFVM = "2.13.0"
+julia = "1.11"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
