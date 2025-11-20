@@ -110,7 +110,7 @@ the solvent bulk number density $n_0^E=\frac{1}{v_0} - \sum_{\alpha=1}^N v_\alph
 
 For the symmetric cell case, these data can be seen as the values at $x=L/2$ for a symmetric
 binary electrolyte.
-\todo{How these can be intepreted in the general case?}
+\todo{How these can be interpreted in the general case?}
 
 
 \subsection{Pressure calculation}
@@ -163,7 +163,7 @@ and instead of the pressure PDE solve an algebraic system
   \label{eq:pressureAE}
   \sum_{\alpha=0}^N y_\alpha(\phi,p)=1
 \end{align}
-or (as it occured numerically to be more benign)
+or (as it occurred numerically to be more benign)
 
 \begin{align}
   \label{eq:pressureAElog}
@@ -198,7 +198,7 @@ for different applied potentials $U$ allow to estimate the space charge capacita
   \label{eq:dlcap}
   C_{dl}(U) = \frac{dQ}{dU} \approx  \frac{Q(U+\delta U)-Q(U)}{\delta U}.
 \end{align}
-\todo{I think we also should write code for this as part of verfication}
+\todo{I think we also should write code for this as part of verification}
 
 \subsection{Symmetric cell problem}
 This problem appears to be less investigated.\todo{Do some literature research here}
@@ -228,7 +228,7 @@ However, we can hypothesize some of its properties:
 \section{Generalizations, alternative formulations}
 \begin{itemize}
   \item We can formulate everything in molar concentrations and activity coefficients \todo{Activity coefficients?}
-  \item The full problem als takes into account molar masses. \todo{Do we need to consider molar masses ?}
+  \item The full problem also takes into account molar masses. \todo{Do we need to consider molar masses ?}
   \item Field dependent dielectric permittivity is rather straightforward here
         \cite{landstorfer2022thermodynamic}
         \todo{Add field dependedent   $\varepsilon$}

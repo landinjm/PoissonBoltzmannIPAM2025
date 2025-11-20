@@ -1,12 +1,12 @@
 name: Format Check
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
+  # pull_request:
+  #   branches:
+  #     - main
 
 concurrency:
   group: ${{ github.event_name }}-${{ github.workflow }}-${{ github.ref }}

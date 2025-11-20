@@ -44,3 +44,12 @@ PythonPlot = "1"
 Revise = "3.12.1"
 VoronoiFVM = "2.14"
 julia = "1.11"
+
+
+[extras]
+JuliaMPBSolver = "d8b18f01-5396-498d-b34d-247825c18ff0"
+Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Pkg", "Test", "JuliaMPBSolver"]

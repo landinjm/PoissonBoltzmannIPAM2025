@@ -6,10 +6,10 @@ using InteractiveUtils
 
 # ╔═╡ 60941eaa-1aea-11eb-1277-97b991548781
 begin
-  using Pkg
-  Pkg.activate(joinpath(@__DIR__, ".."))
-  using PlutoUI
-  using JuliaMPBSolver
+    using Pkg
+    Pkg.activate(joinpath(@__DIR__, ".."))
+    using PlutoUI
+    using JuliaMPBSolver
 end
 
 # ╔═╡ 5b7da564-8c8e-45c9-8c72-534c5a13301d
@@ -19,7 +19,7 @@ md"""
 
 # ╔═╡ 882dda23-63b9-4b1e-a04e-69071deff69a
 md"""
-This notebook is only relocateable together with the whole {PKGNAME} project.
+This notebook is only relocatable together with the whole {PKGNAME} project.
 All packages used by this notebook need to be added to the environment in 
 $(dirname(joinpath(@__DIR__,".."))).
 """

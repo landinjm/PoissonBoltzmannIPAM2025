@@ -19,4 +19,3 @@ export PYTHON_JULIACALL_PROJECT=`pwd`
 
 # Set up julia environment
 julia --project --startup-file=no -e "using Pkg; Pkg.resolve(); using JuliaDraftSolver"
-

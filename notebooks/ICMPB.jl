@@ -46,7 +46,7 @@ md"""
 md"""
 - For the term, see e.g. "Ion-Conserving Modified Poisson–Boltzmann Theory Considering a Steric Effect in an Electrolyte", Journal of the Physical Society of Japan, December 15, 2016, Vol. 85, No. 12, DOI [10.7566/JPSJ.85.124006](https://doi.org/10.7566/JPSJ.85.124006)
 - According to Google Scholar, there have been no studies so far of the situation with surface charges instead of applied voltages.
-- This notebook studies the special case with equal ion sizes which results in a constant summary concentraion ``c̄=\sum_{i=0}^{N} c_i`` where ``c_0`` is the solvent concentation.
+- This notebook studies the special case with equal ion sizes which results in a constant summary concentration ``c̄=\sum_{i=0}^{N} c_i`` where ``c_0`` is the solvent concentration.
 """
 
 # ╔═╡ ea15a97a-45d5-4076-989d-39024f532997
@@ -77,7 +77,7 @@ where ``f_{mod}=1`` indicates the Bikerman (modified Poisson Boltzmann) model an
 
 # ╔═╡ e118211d-c341-47ad-8693-6e5fe5af2fff
 md"""
-We assume the the problem to be given in a domain ``Ω=(0,L)`` with boundary conditons
+We assume the the problem to be given in a domain ``Ω=(0,L)`` with boundary conditions
 ```math
 \begin{aligned}
 	(1+χ)\nabla \phi|_{z=0} &= -q\\

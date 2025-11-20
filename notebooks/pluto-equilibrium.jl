@@ -6,19 +6,19 @@ using InteractiveUtils
 
 # ╔═╡ 60941eaa-1aea-11eb-1277-97b991548781
 begin
-  using Pkg
-  Pkg.activate(joinpath(@__DIR__, ".."))
-  using PlutoUI
-  using VoronoiFVM
-  using ExtendableGrids
-  using LinearAlgebra
-  using NLsolve
-  using Unitful
-  using LessUnitful
-  using LessUnitful.MoreUnitful
-  using Test
-  using PythonPlot
-  using Colors
+    using Pkg
+    Pkg.activate(joinpath(@__DIR__, ".."))
+    using PlutoUI
+    using VoronoiFVM
+    using ExtendableGrids
+    using LinearAlgebra
+    using NLsolve
+    using Unitful
+    using LessUnitful
+    using LessUnitful.MoreUnitful
+    using Test
+    using PythonPlot
+    using Colors
 end
 
 # ╔═╡ ef660f6f-9de3-4896-a65e-13c60df5de1e
@@ -72,9 +72,9 @@ L_{Debye}=\sqrt{ \frac{(1+χ)ε_0k_BT}{e^2n_E}}
 
 # ╔═╡ a41c6c1f-ceb5-4590-a421-cae5078d167b
 function L_Debye(data)
-  return sqrt(
-    (1 + data.χ) * data.ε_0 * ph"k_B" * data.T / (data.e^2 * data.n_E[1]),
-  )
+    return sqrt(
+        (1 + data.χ) * data.ε_0 * ph"k_B" * data.T / (data.e^2 * data.n_E[1]),
+    )
 end;
 
 # ╔═╡ f4facb34-1f4a-432d-8a1e-30299e542bcd
@@ -107,10 +107,10 @@ md"""
 
 # ╔═╡ 5fed71ec-35fb-4804-99ff-e1eaf18fac1b
 begin
-  const iφ = 1
-  const ip = 2
-  const iA = 1
-  const iC = 2
+    const iφ = 1
+    const ip = 2
+    const iA = 1
+    const iC = 2
 end;
 
 # ╔═╡ 5eca37ba-f858-45fb-a66a-3795327dfd18
@@ -136,9 +136,9 @@ Ion molar fractions
 
 # ╔═╡ 188f67d8-2ae8-474c-8e58-68b8b4fde02e
 function y_α(φ, p, α, data)
-  η_φ = data.z[α] * data.e * (φ - data.E_ref)
-  η_p = data.v[α] * (p * data.pscale - data.p_ref)
-  return data.y_E[α] * exp(-(η_φ + η_p) / (data.kT))
+    η_φ = data.z[α] * data.e * (φ - data.E_ref)
+    η_p = data.v[α] * (p * data.pscale - data.p_ref)
+    return data.y_E[α] * exp(-(η_φ + η_p) / (data.kT))
 end;
 
 # ╔═╡ f70eed13-a6c2-4d54-9f30-113367afaf7d
@@ -150,7 +150,7 @@ Solvent molar fraction
 
 # ╔═╡ d7531d5f-fc2d-42b2-9cf9-6a737b0f0f8d
 function y0(p, data)
-  return data.y0_E * exp(-data.v0 * (p * data.pscale - data.p_ref) / (data.kT))
+    return data.y0_E * exp(-data.v0 * (p * data.pscale - data.p_ref) / (data.kT))
 end;
 
 # ╔═╡ f6f004a6-d71b-4813-a363-9f51dc37e42a
@@ -172,7 +172,7 @@ VoronoiFVM flux function for left hand side of Poisson equation
 
 # ╔═╡ 0e2d20a1-5f26-4263-9a91-3b40b2c2996a
 function poisson_flux!(f, u, edge, data)
-  return f[iφ] = (1.0 + data.χ) * data.ε_0 * (u[iφ, 1] - u[iφ, 2])
+    return f[iφ] = (1.0 + data.χ) * data.ε_0 * (u[iφ, 1] - u[iφ, 2])
 end;
 
 # ╔═╡ 824c610b-6e5e-48a3-be37-19104f52d1d9
@@ -212,15 +212,15 @@ q(φ,p)&=e∑\limits_α z_αn_α = ne∑\limits_α z_αy_α\\
 
 # ╔═╡ b07246b8-aec5-4161-8879-8cefb350aced
 function spacecharge(φ, p, data)
-  y = y0(p, data)
-  sumyz = zero(eltype(p))
-  sumyv = data.v0 * y
-  for α in 1:(data.N)
-    y = y_α(φ, p, α, data)
-    sumyz += data.z[α] * y
-    sumyv += data.v[α] * y
-  end
-  return data.e * sumyz / sumyv
+    y = y0(p, data)
+    sumyz = zero(eltype(p))
+    sumyv = data.v0 * y
+    for α in 1:(data.N)
+        y = y_α(φ, p, α, data)
+        sumyz += data.z[α] * y
+        sumyv += data.v[α] * y
+    end
+    return data.e * sumyz / sumyv
 end
 
 # ╔═╡ b41838bb-3d5b-499c-9eb5-137c252ae366
@@ -230,11 +230,11 @@ md"""
 
 # ╔═╡ a468f43a-aa20-45dc-9c21-77f5adf2d700
 function ysum(φ, p, data)
-  sumy = y0(p, data)
-  for α in 1:(data.N)
-    sumy += y_α(φ, p, α, data)
-  end
-  return sumy
+    sumy = y0(p, data)
+    for α in 1:(data.N)
+        sumy += y_α(φ, p, α, data)
+    end
+    return sumy
 end
 
 # ╔═╡ 978bf1d3-4758-4d01-b1e5-8aed1db9024f
@@ -280,65 +280,65 @@ y_α^E&=\frac{n_α^E}{n^E}
 
 # ╔═╡ 32db42f3-5084-4908-9b53-59291b6133c5
 function derived(κ, v0, vu, n_E, T)
-  c0 = 1 / v0
-  barc = 0.0
-  v = vu + κ * v0
-  N = length(κ)
-  for α in 1:N
-    barc += n_E[α]
-    c0 -= n_E[α] * (1 + κ[α])
-  end
-  barc += c0
-  y_E = n_E / barc
-  y0_E = c0 / barc
-  return (; v, y_E, y0_E)
+    c0 = 1 / v0
+    barc = 0.0
+    v = vu + κ * v0
+    N = length(κ)
+    for α in 1:N
+        barc += n_E[α]
+        c0 -= n_E[α] * (1 + κ[α])
+    end
+    barc += c0
+    y_E = n_E / barc
+    y0_E = c0 / barc
+    return (; v, y_E, y0_E)
 end;
 
 # ╔═╡ 0d825f88-cd67-4368-90b3-29f316b72e6e
 begin
-  """
-      EquilibriumData
+    """
+        EquilibriumData
 
-  Data structure containg data for equilibrum calculations
-  """
-  Base.@kwdef mutable struct EquilibriumData
-    N::Int64 = 2                     # number of ionic species
-    T::Float64 = 298.15 * ufac"K"        # temperature
-    kT::Float64 = ph"k_B" * T             # temperature
-    p_ref::Float64 = 1.0e5 * ufac"Pa"        # referece pressure
-    pscale::Float64 = 1.0 * ufac"GPa"         # pressure scaling nparameter
-    E_ref::Float64 = 0.0 * ufac"V"           # reference voltage
-    n0_ref::Float64 = 55.508 * ph"N_A" / ufac"dm^3"  # solvent molarity
-    v0::Float64 = 1 / n0_ref              # solvent molecule volume
-    vu::Vector{Float64} = [1 / n0_ref, 1 / n0_ref]           # unsolvated ion volume
-    χ::Float64 = 15                    # dielectric susceptibility
-    z::Vector{Int} = [-1, 1]                # ion charge numbers
-    κ::Vector{Int} = [10, 10]               # ion solvation numbers
-    molarity::Float64 = 0.1 * ph"N_A" / ufac"dm^3"
-    n_E::Vector{Float64} = [molarity, molarity]  # bulk ion number densities
-    μ_e::Vector{Float64} = [0.0]             # grain facet electron chemical potential
+    Data structure containing data for equilibrium calculations
+    """
+    Base.@kwdef mutable struct EquilibriumData
+        N::Int64 = 2                     # number of ionic species
+        T::Float64 = 298.15 * ufac"K"        # temperature
+        kT::Float64 = ph"k_B" * T             # temperature
+        p_ref::Float64 = 1.0e5 * ufac"Pa"        # reference pressure
+        pscale::Float64 = 1.0 * ufac"GPa"         # pressure scaling nparameter
+        E_ref::Float64 = 0.0 * ufac"V"           # reference voltage
+        n0_ref::Float64 = 55.508 * ph"N_A" / ufac"dm^3"  # solvent molarity
+        v0::Float64 = 1 / n0_ref              # solvent molecule volume
+        vu::Vector{Float64} = [1 / n0_ref, 1 / n0_ref]           # unsolvated ion volume
+        χ::Float64 = 15                    # dielectric susceptibility
+        z::Vector{Int} = [-1, 1]                # ion charge numbers
+        κ::Vector{Int} = [10, 10]               # ion solvation numbers
+        molarity::Float64 = 0.1 * ph"N_A" / ufac"dm^3"
+        n_E::Vector{Float64} = [molarity, molarity]  # bulk ion number densities
+        μ_e::Vector{Float64} = [0.0]             # grain facet electron chemical potential
 
-    e::Float64 = ph"e"
-    ε_0::Float64 = ph"ε_0"
+        e::Float64 = ph"e"
+        ε_0::Float64 = ph"ε_0"
 
-    v::Vector{Float64} = derived(κ, v0, vu, n_E, T).v   # effective ion volumes
-    y_E::Vector{Float64} = derived(κ, v0, vu, n_E, T).y_E # bulk ion mole fractions
-    y0_E::Float64 = derived(κ, v0, vu, n_E, T).y0_E       # bulk solvent mole fraction
-  end
+        v::Vector{Float64} = derived(κ, v0, vu, n_E, T).v   # effective ion volumes
+        y_E::Vector{Float64} = derived(κ, v0, vu, n_E, T).y_E # bulk ion mole fractions
+        y0_E::Float64 = derived(κ, v0, vu, n_E, T).y0_E       # bulk solvent mole fraction
+    end
 end
 
 # ╔═╡ 5d6340c4-2ddd-429b-a60b-3de5570a7398
 function set_molarity!(data::EquilibriumData, M_E)
-  n_E = M_E * ph"N_A" / ufac"dm^3"
-  data.molarity = n_E
-  return data.n_E = fill(n_E, data.N)
+    n_E = M_E * ph"N_A" / ufac"dm^3"
+    data.molarity = n_E
+    return data.n_E = fill(n_E, data.N)
 end
 
 # ╔═╡ 1d22b09e-99c1-4026-9505-07bdffc98582
 function dlcap0(data::EquilibriumData)
-  return sqrt(
-    2 * (1 + data.χ) * ph"ε_0" * ph"e"^2 * data.n_E[1] / (ph"k_B" * data.T),
-  )
+    return sqrt(
+        2 * (1 + data.χ) * ph"ε_0" * ph"e"^2 * data.n_E[1] / (ph"k_B" * data.T),
+    )
 end;
 
 # ╔═╡ fe704fb4-d07c-4591-b834-d6cf2f4f7075
@@ -355,27 +355,27 @@ end
 
 # ╔═╡ 3d9a47b8-2754-4a21-84a4-39cbeab12286
 begin
-  function update_derived!(data::EquilibriumData)
-    (; κ, v0, vu, n_E, T) = data
-    return data.v, data.y_E, data.y0_E = derived(κ, v0, vu, n_E, T)
-  end
+    function update_derived!(data::EquilibriumData)
+        (; κ, v0, vu, n_E, T) = data
+        return data.v, data.y_E, data.y0_E = derived(κ, v0, vu, n_E, T)
+    end
 end
 
 # ╔═╡ b1e333c0-cdaa-4242-b71d-b54ff71aef83
 let
-  data = EquilibriumData()
-  set_molarity!(data, 0.01)
-  update_derived!(data)
-  sumyz = 0.0
-  sumyv = data.y0_E * data.v0
-  sumy = data.y0_E
-  for α in 1:data.N
-    v = (1.0 + data.κ[α]) * data.v0
-    sumyz += data.y_E[α] * data.z[α]
-    sumyv += data.y_E[α] * v
-    sumy += data.y_E[α]
-  end
-  @assert sumy ≈ 1.0
+    data = EquilibriumData()
+    set_molarity!(data, 0.01)
+    update_derived!(data)
+    sumyz = 0.0
+    sumyv = data.y0_E * data.v0
+    sumy = data.y0_E
+    for α in 1:data.N
+        v = (1.0 + data.κ[α]) * data.v0
+        sumyz += data.y_E[α] * data.z[α]
+        sumyv += data.y_E[α] * v
+        sumy += data.y_E[α]
+    end
+    @assert sumy ≈ 1.0
 end
 
 # ╔═╡ 243d27b5-a1b8-4127-beec-d5643ad07855
@@ -422,7 +422,7 @@ md"""
 md"""
 #### create\_equilibrium\_system(grid,data)
 
-Create equlibrium system, enable species and apply zero voltage
+Create equilibrium system, enable species and apply zero voltage
 """
 
 # ╔═╡ c8822d32-affe-473e-8dbf-84aa83b3580c
@@ -434,14 +434,14 @@ Apply voltage `E` to system.
 
 # ╔═╡ d885ac23-ddfa-495c-b93b-54032c8a5c1f
 function apply_voltage!(sys, E)
-  data = sys.physics.data
-  nbc = num_bfaceregions(sys.grid)
-  nfacets = length(data.μ_e)
-  @assert nbc > nfacets
-  for ifacet in 1:nfacets
-    boundary_dirichlet!(sys, iφ, ifacet, φ_Σ(ifacet, data, E))
-  end
-  return sys
+    data = sys.physics.data
+    nbc = num_bfaceregions(sys.grid)
+    nfacets = length(data.μ_e)
+    @assert nbc > nfacets
+    for ifacet in 1:nfacets
+        boundary_dirichlet!(sys, iφ, ifacet, φ_Σ(ifacet, data, E))
+    end
+    return sys
 end;
 
 # ╔═╡ 93428d11-a3dc-4e29-ae6d-48ba37082c74
@@ -480,24 +480,24 @@ Calculate number concentration at discretization node
 
 # ╔═╡ 3ceda3b1-bf1c-4126-b94f-2ee03e8dde99
 function c_num!(c, φ, p, data)
-  y = y0(p, data)
-  sumyv = data.v0 * y
-  for α in 1:(data.N)
-    c[α] = y_α(φ, p, α, data)
-    sumyv += c[α] * data.v[α]
-  end
-  return c ./= sumyv
+    y = y0(p, data)
+    sumyv = data.v0 * y
+    for α in 1:(data.N)
+        c[α] = y_α(φ, p, α, data)
+        sumyv += c[α] * data.v[α]
+    end
+    return c ./= sumyv
 end;
 
 # ╔═╡ 97c5942c-8eb4-4b5c-8951-87ac0c9f396d
 function c0_num!(c, φ, p, data)
-  y = y0(p, data)
-  sumyv = data.v0 * y
-  for α in 1:(data.N)
-    c[α] = y_α(φ, p, α, data)
-    sumyv += c[α] * data.v[α]
-  end
-  return y / sumyv
+    y = y0(p, data)
+    sumyv = data.v0 * y
+    for α in 1:(data.N)
+        c[α] = y_α(φ, p, α, data)
+        sumyv += c[α] * data.v[α]
+    end
+    return y / sumyv
 end;
 
 # ╔═╡ 0c54efd0-f279-4dc6-8b00-ba092dd13f44
@@ -509,27 +509,27 @@ Obtain ion number densities from system
 
 # ╔═╡ 800dfed8-9f29-4138-96f8-e8bf1f2f00e6
 function calc_cnum(sol, sys)
-  data = sys.physics.data
-  grid = sys.grid
-  nnodes = num_nodes(grid)
-  conc = zeros(data.N, nnodes)
-  for i in 1:nnodes
-    @views c_num!(conc[:, i], sol[iφ, i], sol[ip, i], data)
-  end
-  return conc
+    data = sys.physics.data
+    grid = sys.grid
+    nnodes = num_nodes(grid)
+    conc = zeros(data.N, nnodes)
+    for i in 1:nnodes
+        @views c_num!(conc[:, i], sol[iφ, i], sol[ip, i], data)
+    end
+    return conc
 end;
 
 # ╔═╡ 24910762-7d56-446b-a758-d8e830fe9a09
 function calc_c0num(sol, sys)
-  data = sys.physics.data
-  grid = sys.grid
-  nnodes = num_nodes(grid)
-  c0 = zeros(nnodes)
-  conc = zeros(data.N)
-  for i in 1:nnodes
-    @views c0[i] = c0_num!(conc, sol[iφ, i], sol[ip, i], data)
-  end
-  return c0
+    data = sys.physics.data
+    grid = sys.grid
+    nnodes = num_nodes(grid)
+    c0 = zeros(nnodes)
+    conc = zeros(data.N)
+    for i in 1:nnodes
+        @views c0[i] = c0_num!(conc, sol[iφ, i], sol[ip, i], data)
+    end
+    return c0
 end;
 
 # ╔═╡ 9fe3ca93-c051-426e-8b9a-cc59f59319ad
@@ -618,153 +618,153 @@ The bulk Dirichlet boundary condition for the pressure is necessary to make the 
 
 # ╔═╡ e1c13f1e-5b67-464b-967b-25e3a93e33d9
 function spacecharge!(f, u, node, data)
-  φ = u[iφ]
-  p = u[ip]
-  return f[iφ] = -spacecharge(u[iφ], u[ip], data)
+    φ = u[iφ]
+    p = u[ip]
+    return f[iφ] = -spacecharge(u[iφ], u[ip], data)
 end;
 
 # ╔═╡ 64e47917-9c61-4d64-a6a1-c6e8c7b28c59
 function poisson_and_p_flux!(f, u, edge, data)
-  f[iφ] = (1.0 + data.χ) * data.ε_0 * (u[iφ, 1] - u[iφ, 2])
-  q1 = spacecharge(u[iφ, 1], u[ip, 1], data)
-  q2 = spacecharge(u[iφ, 2], u[ip, 2], data)
-  return f[ip] =
-    (u[ip, 1] - u[ip, 2]) +
-    (u[iφ, 1] - u[iφ, 2]) * (q1 + q2) / (2 * data.pscale)
+    f[iφ] = (1.0 + data.χ) * data.ε_0 * (u[iφ, 1] - u[iφ, 2])
+    q1 = spacecharge(u[iφ, 1], u[ip, 1], data)
+    q2 = spacecharge(u[iφ, 2], u[ip, 2], data)
+    return f[ip] =
+        (u[ip, 1] - u[ip, 2]) +
+        (u[iφ, 1] - u[iφ, 2]) * (q1 + q2) / (2 * data.pscale)
 end;
 
 # ╔═╡ 48670f54-d303-4c3a-a191-06e6592a2e0a
 function ysum(sys, sol)
-  data = sys.physics.data
-  n = size(sol, 2)
-  sumy = zeros(n)
-  for i in 1:n
-    sumy[i] = ysum(sol[iφ, i], sol[ip, i], data)
-  end
-  return sumy
+    data = sys.physics.data
+    n = size(sol, 2)
+    sumy = zeros(n)
+    for i in 1:n
+        sumy[i] = ysum(sol[iφ, i], sol[ip, i], data)
+    end
+    return sumy
 end
 
 # ╔═╡ 042a452a-1130-4a56-a1b9-b2674803e445
 function spacecharge_and_ysum!(f, u, node, data)
-  φ = u[iφ]
-  p = u[ip]
-  f[iφ] = -spacecharge(φ, p, data)
-  return f[ip] = log(ysum(φ, p, data)) # this behaves much better with Newton's method
+    φ = u[iφ]
+    p = u[ip]
+    f[iφ] = -spacecharge(φ, p, data)
+    return f[ip] = log(ysum(φ, p, data)) # this behaves much better with Newton's method
 end;
 
 # ╔═╡ 6e3dbf34-c1c9-460b-9546-b2ee8ee99d68
 function create_equilibrium_system(
-  grid,
-  data::EquilibriumData = EquilibriumData();
-  Γ_bulk = 0,
-)
-  update_derived!(data)
-  sys = VoronoiFVM.System(
-    grid;
-    data = data,
-    flux = poisson_flux!,
-    reaction = spacecharge_and_ysum!,
-    species = [iφ, ip],
-  )
-  if Γ_bulk > 0
-    boundary_dirichlet!(sys, iφ, Γ_bulk, 0.0)
-  end
-  return apply_voltage!(sys, 0)
+        grid,
+        data::EquilibriumData = EquilibriumData();
+        Γ_bulk = 0,
+    )
+    update_derived!(data)
+    sys = VoronoiFVM.System(
+        grid;
+        data = data,
+        flux = poisson_flux!,
+        reaction = spacecharge_and_ysum!,
+        species = [iφ, ip],
+    )
+    if Γ_bulk > 0
+        boundary_dirichlet!(sys, iφ, Γ_bulk, 0.0)
+    end
+    return apply_voltage!(sys, 0)
 end;
 
 # ╔═╡ 49466829-9459-4dc8-85cc-c67460e290d2
 function calc_QBL(sol, sys)
-  return VoronoiFVM.integrate(sys, spacecharge_and_ysum!, sol)[iφ, 1]
+    return VoronoiFVM.integrate(sys, spacecharge_and_ysum!, sol)[iφ, 1]
 end
 
 # ╔═╡ 77f49da5-ffd2-4148-93a6-f45382ba6d91
 function dlcapsweep_equi(
-  sys;
-  vmax = 2 * ufac"V",
-  nsteps = 21,
-  δV = 1.0e-3 * ufac"V",
-  molarity = nothing,
-  verbose = false,
-)
-  if !isnothing(molarity)
-    error(
-      "The molarity kwarg of dlcapsweep_equie has been removed. Pass the molarity information with set_molarity!.",
+        sys;
+        vmax = 2 * ufac"V",
+        nsteps = 21,
+        δV = 1.0e-3 * ufac"V",
+        molarity = nothing,
+        verbose = false,
     )
-  end
-
-  data = sys.physics.data
-  update_derived!(data)
-  apply_voltage!(sys, 0)
-
-  c = VoronoiFVM.NewtonControl()
-  #	c.damp_growth=1.1
-  c.verbose = verbose
-  c.tol_round = 1.0e-10
-  c.max_round = 3
-  c.damp_initial = 0.01
-  c.damp_growth = 2
-
-  inival = solve(sys; inival = 0, control = c)
-  vstep = vmax / (nsteps - 1)
-
-  c.damp_initial = 1
-
-  function rundlcap(dir)
-    volts = zeros(0)
-    caps = zeros(0)
-    volt = 0.0
-    sol = inival
-    for iv in 1:nsteps
-      apply_voltage!(sys, volt)
-      c.damp_initial = 1
-      sol = solve(sys; inival = sol, control = c)
-
-      Q = calc_QBL(sol, sys)
-      apply_voltage!(sys, volt + dir * δV)
-      c.damp_initial = 1
-      sol = solve(sys; inival = sol, control = c)
-      Qδ = calc_QBL(sol, sys)
-      push!(caps, (Q - Qδ) / (dir * δV))
-      push!(volts, volt)
-      volt += dir * vstep
+    if !isnothing(molarity)
+        error(
+            "The molarity kwarg of dlcapsweep_equie has been removed. Pass the molarity information with set_molarity!.",
+        )
     end
-    return volts, caps
-  end
-  Vf, Cf = rundlcap(1)
-  Vr, Cr = rundlcap(-1)
-  return vcat(reverse(Vr), Vf), vcat(reverse(Cr), Cf)
+
+    data = sys.physics.data
+    update_derived!(data)
+    apply_voltage!(sys, 0)
+
+    c = VoronoiFVM.NewtonControl()
+    #	c.damp_growth=1.1
+    c.verbose = verbose
+    c.tol_round = 1.0e-10
+    c.max_round = 3
+    c.damp_initial = 0.01
+    c.damp_growth = 2
+
+    inival = solve(sys; inival = 0, control = c)
+    vstep = vmax / (nsteps - 1)
+
+    c.damp_initial = 1
+
+    function rundlcap(dir)
+        volts = zeros(0)
+        caps = zeros(0)
+        volt = 0.0
+        sol = inival
+        for iv in 1:nsteps
+            apply_voltage!(sys, volt)
+            c.damp_initial = 1
+            sol = solve(sys; inival = sol, control = c)
+
+            Q = calc_QBL(sol, sys)
+            apply_voltage!(sys, volt + dir * δV)
+            c.damp_initial = 1
+            sol = solve(sys; inival = sol, control = c)
+            Qδ = calc_QBL(sol, sys)
+            push!(caps, (Q - Qδ) / (dir * δV))
+            push!(volts, volt)
+            volt += dir * vstep
+        end
+        return volts, caps
+    end
+    Vf, Cf = rundlcap(1)
+    Vr, Cr = rundlcap(-1)
+    return vcat(reverse(Vr), Vf), vcat(reverse(Cr), Cf)
 end
 
 # ╔═╡ 7bf3a130-3b47-428e-916f-4a0ec1237844
 function create_equilibrium_pp_system(
-  grid,
-  data::EquilibriumData = EquilibriumData();
-  Γ_bulk = 0,
-)
-  update_derived!(data)
-
-  sys = VoronoiFVM.System(
-    grid;
-    data = data,
-    flux = poisson_and_p_flux!,
-    reaction = spacecharge!,
-    species = [iφ, ip],
-  )
-  if Γ_bulk > 0
-    logysum!(y, p) = y[1] = log(ysum(0.0, p[1], data))
-    res = nlsolve(
-      logysum!,
-      [0.0];
-      autodiff = :forward,
-      method = :newton,
-      xtol = 1.0e-10,
-      ftol = 1.0e-20,
+        grid,
+        data::EquilibriumData = EquilibriumData();
+        Γ_bulk = 0,
     )
-    boundary_dirichlet!(sys, iφ, Γ_bulk, 0.0)
-    @info res
-    boundary_dirichlet!(sys, ip, Γ_bulk, res.zero[1])
-  end
-  return apply_voltage!(sys, 0)
+    update_derived!(data)
+
+    sys = VoronoiFVM.System(
+        grid;
+        data = data,
+        flux = poisson_and_p_flux!,
+        reaction = spacecharge!,
+        species = [iφ, ip],
+    )
+    if Γ_bulk > 0
+        logysum!(y, p) = y[1] = log(ysum(0.0, p[1], data))
+        res = nlsolve(
+            logysum!,
+            [0.0];
+            autodiff = :forward,
+            method = :newton,
+            xtol = 1.0e-10,
+            ftol = 1.0e-20,
+        )
+        boundary_dirichlet!(sys, iφ, Γ_bulk, 0.0)
+        @info res
+        boundary_dirichlet!(sys, ip, Γ_bulk, res.zero[1])
+    end
+    return apply_voltage!(sys, 0)
 end;
 
 # ╔═╡ ac27c318-9a00-4287-bd36-3a97d65b5459
@@ -774,12 +774,12 @@ md"""
 
 # ╔═╡ fe48d05b-99bd-48b4-a044-4dd8e8d18b5d
 begin
-  SI(x) = Float64(Unitful.ustrip(Unitful.upreferred(1 * x)))
-  const V = SI(Unitful.V)
-  const eV = SI(Unitful.eV)
-  const nm = SI(Unitful.nm)
-  const cm = SI(Unitful.cm)
-  const μF = SI(Unitful.μF)
+    SI(x) = Float64(Unitful.ustrip(Unitful.upreferred(1 * x)))
+    const V = SI(Unitful.V)
+    const eV = SI(Unitful.eV)
+    const nm = SI(Unitful.nm)
+    const cm = SI(Unitful.cm)
+    const μF = SI(Unitful.μF)
 end
 
 # ╔═╡ a3f23fe8-3b83-440a-8f4f-c4fedef5615b
@@ -790,9 +790,9 @@ dlcap_exact = 0.22846691848825248
 
 # ╔═╡ 05334798-a072-41ae-b23e-f884baadb071
 begin
-  equidata = EquilibriumData()
-  set_molarity!(equidata, 0.01)
-  equidata.χ = 78.49 - 1
+    equidata = EquilibriumData()
+    set_molarity!(equidata, 0.01)
+    equidata.χ = 78.49 - 1
 end
 
 # ╔═╡ ddb3e60b-8571-465f-acf3-2403fb884363
@@ -800,17 +800,17 @@ end
 
 # ╔═╡ a629e8a1-b1d7-42d8-8c17-43475785218e
 begin
-  Vmax = 2 * V
+    Vmax = 2 * V
 
-  L = 20nm
+    L = 20nm
 
-  hmin = 0.05 * nm
+    hmin = 0.05 * nm
 
-  hmax = 0.5 * nm
+    hmax = 0.5 * nm
 
-  X = ExtendableGrids.geomspace(0, L, hmin, hmax)
+    X = ExtendableGrids.geomspace(0, L, hmin, hmax)
 
-  grid = ExtendableGrids.simplexgrid(X)
+    grid = ExtendableGrids.simplexgrid(X)
 end
 
 # ╔═╡ cdb7e8a1-dcdf-4e7a-9ecf-121f51b485c3
@@ -827,24 +827,24 @@ molarities = [0.001, 0.01, 0.1, 1]
 
 # ╔═╡ 70e1a34b-9041-4151-91aa-4dd7907a5b13
 function capscalc(sys, molarities)
-  result = []
-  for imol in 1:length(molarities)
-    data = sys.physics.data
-    set_molarity!(data, molarities[imol])
-    t = @elapsed volts, caps = dlcapsweep_equi(sys, vmax = 1V, nsteps = 101)
-    cdl0 = dlcap0(data)
-    @info "elapsed=$(t)"
-    push!(
-      result,
-      (
-        voltages = volts,
-        dlcaps = caps,
-        cdl0 = cdl0,
-        molarity = molarities[imol],
-      ),
-    )
-  end
-  return result
+    result = []
+    for imol in 1:length(molarities)
+        data = sys.physics.data
+        set_molarity!(data, molarities[imol])
+        t = @elapsed volts, caps = dlcapsweep_equi(sys, vmax = 1V, nsteps = 101)
+        cdl0 = dlcap0(data)
+        @info "elapsed=$(t)"
+        push!(
+            result,
+            (
+                voltages = volts,
+                dlcaps = caps,
+                cdl0 = cdl0,
+                molarity = molarities[imol],
+            ),
+        )
+    end
+    return result
 end
 
 # ╔═╡ 38061646-9c66-4f9c-a0b5-5090dc62f8fe
@@ -870,14 +870,14 @@ md"""
 
 # ╔═╡ 1fcfbad3-2fad-4eee-a1a3-031dc29c9083
 function resultcompare(r1, r2; tol = 1.0e-3)
-  for i in 1:length(r1)
-    for f in fieldnames(typeof(r1[i]))
-      if !isapprox(r1[i][f], r2[i][f]; rtol = tol)
-        return false
-      end
+    for i in 1:length(r1)
+        for f in fieldnames(typeof(r1[i]))
+            if !isapprox(r1[i][f], r2[i][f]; rtol = tol)
+                return false
+            end
+        end
     end
-  end
-  return true
+    return true
 end
 
 # ╔═╡ 25a183d9-c6a2-4ac3-a283-a02e4e9231dd

@@ -18,31 +18,30 @@ end
 
 # ╔═╡ a70cef7d-2a2f-4155-bdf3-fec9df94c63f
 begin
-  using Pkg
-  
-  Pkg.activate(joinpath(@__DIR__, ".."))
-	using Revise
-  using PlutoUI, HypertextLiteral, UUIDs
-  using LinearAlgebra
-  using Interpolations
-  using VoronoiFVM, ExtendableGrids
-  using LaTeXStrings
-  using LessUnitful, Unitful
-  using PreallocationTools
-  using LaTeXStrings
-  using DoubleFloats
-  using ForwardDiff
-  using PythonPlot
-  using NLsolve
-  using DelimitedFiles
+    using Pkg
 
-  using DrWatson
+    Pkg.activate(joinpath(@__DIR__, ".."))
+    using Revise
+    using PlutoUI, HypertextLiteral, UUIDs
+    using LinearAlgebra
+    using Interpolations
+    using VoronoiFVM, ExtendableGrids
+    using LaTeXStrings
+    using LessUnitful, Unitful
+    using PreallocationTools
+    using LaTeXStrings
+    using DoubleFloats
+    using ForwardDiff
+    using PythonPlot
+    using NLsolve
+    using DelimitedFiles
 
-	
-  
-  using PoissonBoltzmannIPAM2025
-  using JuliaMPBSolver
-  using JuliaMPBSolver: DataOut
+    using DrWatson
+
+
+    using PoissonBoltzmannIPAM2025
+    using JuliaMPBSolver
+    using JuliaMPBSolver: DataOut
 end
 
 # ╔═╡ 63edffa3-b937-4f60-ae9f-13fa02b1a8f5
@@ -57,7 +56,7 @@ md"""
 md"""
 - For the term, see e.g. "Ion-Conserving Modified Poisson–Boltzmann Theory Considering a Steric Effect in an Electrolyte", Journal of the Physical Society of Japan, December 15, 2016, Vol. 85, No. 12, DOI [10.7566/JPSJ.85.124006](https://doi.org/10.7566/JPSJ.85.124006)
 - According to Google Scholar, there have been no studies so far of the situation with surface charges instead of applied voltages.
-- This notebook studies the special case with equal ion sizes which results in a constant summary concentraion ``c̄=\sum_{i=0}^{N} c_i`` where ``c_0`` is the solvent concentation.
+- This notebook studies the special case with equal ion sizes which results in a constant summary concentration ``c̄=\sum_{i=0}^{N} c_i`` where ``c_0`` is the solvent concentration.
 """
 
 # ╔═╡ 38731e1c-c642-4052-8b17-797f3a2c08d4
@@ -90,7 +89,7 @@ where ``f_{mod}=1`` indicates the Bikerman (modified Poisson Boltzmann) model an
 
 # ╔═╡ e118211d-c341-47ad-8693-6e5fe5af2fff
 md"""
-We assume the the problem to be given in a domain ``Ω=(0,L)`` with boundary conditons
+We assume the the problem to be given in a domain ``Ω=(0,L)`` with boundary conditions
 ```math
 \begin{aligned}
 	(1+χ)\nabla \phi|_{z=0} &= -q\\
@@ -158,18 +157,18 @@ md"""
 
 # ╔═╡ 67de5632-0645-41f0-a9fd-610e40bfc456
 begin
-  const χ_S = 78.49 - 1
-  const F = ph"N_A" * ph"e"
-  const K = ufac"K"
-  const nm = ufac"nm"
-  const m = ufac"m"
-  const dm = ufac"dm"
-  const V = ufac"V"
-  const mol = ufac"mol"
-  const T = (273.15 + 25) * ufac"K"
-  const RT = ph"R" * T
-  const c̄ = 55.508mol / dm^3 # summary molar concentration
-  const ε_0 = ph"ε_0"
+    const χ_S = 78.49 - 1
+    const F = ph"N_A" * ph"e"
+    const K = ufac"K"
+    const nm = ufac"nm"
+    const m = ufac"m"
+    const dm = ufac"dm"
+    const V = ufac"V"
+    const mol = ufac"mol"
+    const T = (273.15 + 25) * ufac"K"
+    const RT = ph"R" * T
+    const c̄ = 55.508mol / dm^3 # summary molar concentration
+    const ε_0 = ph"ε_0"
 end
 
 # ╔═╡ 832362ed-8e40-4c58-af87-9e72a80bb420
@@ -179,14 +178,14 @@ md"""
 
 # ╔═╡ 4cb3283e-d2b4-41e6-ab57-083ec02a6b14
 begin
-  const f_mod = true # model choice: 0: Boltzmann, 1: Bikerman
-  const nref = 4 # grid refinement level
-  const L = 2.278592867nm # computational domain size
-  const n_e = 1 # number of electrons/nm^2 at interfaces, defines q
-  const M_avg = 2 # average molarity
-  const E_0 = 10V / nm # decrement parameter
-  const a = 5.0 / E_0^2 # decrement parameter in χ(E)
-  const z = [-1, 1.0] # species charge numbers
+    const f_mod = true # model choice: 0: Boltzmann, 1: Bikerman
+    const nref = 4 # grid refinement level
+    const L = 2.278592867nm # computational domain size
+    const n_e = 1 # number of electrons/nm^2 at interfaces, defines q
+    const M_avg = 2 # average molarity
+    const E_0 = 10V / nm # decrement parameter
+    const a = 5.0 / E_0^2 # decrement parameter in χ(E)
+    const z = [-1, 1.0] # species charge numbers
 end;
 
 # ╔═╡ b8bf15c2-a822-4294-a877-490a918103e6
@@ -214,9 +213,9 @@ md"""
 
 # ╔═╡ ab73c7cd-d20b-42dd-a89e-e5258b8d2bd0
 begin
-  X=range(0, L, length = 20*2^nref+1)
-  grid = simplexgrid(X)
-  bfacemask!(grid, [L / 2], [L / 2], 3, tol = 1.0e-10 * nm)
+    X = range(0, L, length = 20 * 2^nref + 1)
+    grid = simplexgrid(X)
+    bfacemask!(grid, [L / 2], [L / 2], 3, tol = 1.0e-10 * nm)
 end
 
 # ╔═╡ 1ad518f4-9968-4dcf-b566-ed6fd70f0474
@@ -229,119 +228,119 @@ md"""
 
 # ╔═╡ 099c8ab7-1432-4ff1-9fe8-70e085430cfa
 Base.@kwdef mutable struct PBData
-  c_ref::Vector{Float64} = c_avg
-  c_avg::Vector{Float64} = c_avg
-  c̄::Float64 = c̄
-  c0_ref::Float64 = c̄ - sum(c_ref)
-  q::Float64 = q
-  z::Vector{Float64} = z
-  N::Int = length(z)
-  a::Float64 = a
-  E_0::Float64 = E_0
-  f_mod::Bool = f_mod
-  F::Float64 = F
-  RT::Float64 = RT
-  ε_0::Float64 = ε_0
-  χ_S::Float64 = χ_S
-  iϕ::Int = 1
-  cache = DiffCache(ones(Float64, length(z)))
+    c_ref::Vector{Float64} = c_avg
+    c_avg::Vector{Float64} = c_avg
+    c̄::Float64 = c̄
+    c0_ref::Float64 = c̄ - sum(c_ref)
+    q::Float64 = q
+    z::Vector{Float64} = z
+    N::Int = length(z)
+    a::Float64 = a
+    E_0::Float64 = E_0
+    f_mod::Bool = f_mod
+    F::Float64 = F
+    RT::Float64 = RT
+    ε_0::Float64 = ε_0
+    χ_S::Float64 = χ_S
+    iϕ::Int = 1
+    cache = DiffCache(ones(Float64, length(z)))
 end
 
 # ╔═╡ e3123f2a-9607-4b93-8568-dde3091a40ce
 function molfractions!(y, ϕ, c_ref, c0_ref, data)
-  (; z, N, f_mod, F, RT) = data
-  for ic in 1:N
-    y[ic] = exp(-z[ic] * ϕ * F / RT) * c_ref[ic] / c0_ref
-  end
-  denom = 1.0 / (one(ϕ) + f_mod * sum(y))
-  for ic in 1:N
-    y[ic] = y[ic] * denom
-  end
-  return nothing
+    (; z, N, f_mod, F, RT) = data
+    for ic in 1:N
+        y[ic] = exp(-z[ic] * ϕ * F / RT) * c_ref[ic] / c0_ref
+    end
+    denom = 1.0 / (one(ϕ) + f_mod * sum(y))
+    for ic in 1:N
+        y[ic] = y[ic] * denom
+    end
+    return nothing
 end
 
 # ╔═╡ 03ac2f7e-1d6b-419b-a4cb-9e4a531ab9f1
 function concentrations(sol, data; c_ref = data.c_ref)
-  (; c̄, iϕ, N) = data
-  n = size(sol, 2)
-  c = zeros(N, n)
-  y = zeros(N)
-  c0_ref = data.c̄ - sum(c_ref)
-  for iz in 1:n
-    molfractions!(y, sol[data.iϕ, iz], c_ref, c0_ref, data)
-    for ic in 1:N
-      c[ic, iz] = c̄ * y[ic]
+    (; c̄, iϕ, N) = data
+    n = size(sol, 2)
+    c = zeros(N, n)
+    y = zeros(N)
+    c0_ref = data.c̄ - sum(c_ref)
+    for iz in 1:n
+        molfractions!(y, sol[data.iϕ, iz], c_ref, c0_ref, data)
+        for ic in 1:N
+            c[ic, iz] = c̄ * y[ic]
+        end
     end
-  end
-  return c
+    return c
 end
 
 # ╔═╡ d3bcbe56-761d-4897-9581-ffb71bba0a16
 function avgconcentrations(sol, sys; data = data(sys), c_ref = data.c_ref)
-  c = concentrations(sol, data; c_ref)
-  (; N = data)
-  cavg = zeros(N)
-  nv = nodevolumes(sys)
-  L = sum(nv)
-  for ic in 1:N
-    cavg[ic] = nv ⋅ c[ic, :] / L
-  end
-  return cavg
+    c = concentrations(sol, data; c_ref)
+    (; N = data)
+    cavg = zeros(N)
+    nv = nodevolumes(sys)
+    L = sum(nv)
+    for ic in 1:N
+        cavg[ic] = nv ⋅ c[ic, :] / L
+    end
+    return cavg
 end
 
 # ╔═╡ 0c914971-48a0-4fee-996f-90bb156f8552
 function flux!(y, u, edge, data)
-  (; χ_S, a, ε_0, iϕ) = data
-  eins = one(eltype(u))
-  h = edgelength(edge)
-  E = (u[iϕ, 1] - u[iϕ, 2]) / h
-  χ = χ_S / sqrt(eins + a * E^2)
-  ε = (eins + χ) * ε_0
-  y[iϕ] = ε * ((u[iϕ, 1] - u[iϕ, 2]))
-  return nothing
+    (; χ_S, a, ε_0, iϕ) = data
+    eins = one(eltype(u))
+    h = edgelength(edge)
+    E = (u[iϕ, 1] - u[iϕ, 2]) / h
+    χ = χ_S / sqrt(eins + a * E^2)
+    ε = (eins + χ) * ε_0
+    y[iϕ] = ε * ((u[iϕ, 1] - u[iϕ, 2]))
+    return nothing
 end
 
 # ╔═╡ 8adfa102-417a-4106-a387-0cc16788460a
 function relpermittivity(sol, data; grid)
-  (; χ_S, a, iϕ) = data
-  X = grid[Coordinates][1, :]
-  return χ_S ./ (
-    a *
-    ((sol[iϕ, 2:end] - sol[iϕ, 1:(end-1)]) ./ (X[2:end] - X[1:(end-1)])) .^ 2 .+
-    1
-  ) .+ 1
+    (; χ_S, a, iϕ) = data
+    X = grid[Coordinates][1, :]
+    return χ_S ./ (
+        a *
+            ((sol[iϕ, 2:end] - sol[iϕ, 1:(end - 1)]) ./ (X[2:end] - X[1:(end - 1)])) .^ 2 .+
+            1
+    ) .+ 1
 end
 
 # ╔═╡ b5ed07a7-d5a8-4eaf-9592-7a3445e06d26
 function spacecharge!(y, ϕ, c_ref, c0_ref, data)
-  (; N, F, c_ref, c0_ref, c̄, z) = data
-  molfractions!(y, ϕ, c_ref, c0_ref, data)
-  sumyz = zero(ϕ)
-  for i in 1:N
-    sumyz += z[i] * y[i]
-  end
-  return F * c̄ * sumyz
+    (; N, F, c_ref, c0_ref, c̄, z) = data
+    molfractions!(y, ϕ, c_ref, c0_ref, data)
+    sumyz = zero(ϕ)
+    for i in 1:N
+        sumyz += z[i] * y[i]
+    end
+    return F * c̄ * sumyz
 end
 
 # ╔═╡ 68570541-90b8-4e5a-90a2-322b65ecd510
 function bcondition!(y, u, bnode, data)
-  boundary_neumann!(y, u, bnode, species = data.iϕ, region = 2, value = -data.q)
-  boundary_neumann!(y, u, bnode, species = data.iϕ, region = 1, value = data.q)
-  return nothing
+    boundary_neumann!(y, u, bnode, species = data.iϕ, region = 2, value = -data.q)
+    boundary_neumann!(y, u, bnode, species = data.iϕ, region = 1, value = data.q)
+    return nothing
 end
 
 # ╔═╡ 1bd01480-309a-44bc-b130-8a5be25e71ec
 function extcref(cref0, data)
-  (; z, N) = data
-  return push!(copy(cref0), -z[1:(N-1)] ⋅ cref0 / z[N])
+    (; z, N) = data
+    return push!(copy(cref0), -z[1:(N - 1)] ⋅ cref0 / z[N])
 end
 
 # ╔═╡ b7ccc508-71d2-4f84-be64-4de290c1e2c5
 function clonedata(data0, c_ref)
-  data = deepcopy(data0)
-  data.c_ref .= c_ref
-  data.c0_ref = c̄ - sum(data.c_ref)
-  return data
+    data = deepcopy(data0)
+    data.c_ref .= c_ref
+    data.c0_ref = c̄ - sum(data.c_ref)
+    return data
 end
 
 # ╔═╡ d84b0ad9-0c3c-48b2-b5b7-cfc7d532bdd9
@@ -351,19 +350,19 @@ md"""
 
 # ╔═╡ 258ff2ba-c6c1-4d59-8d46-64cecc1059e9
 function ICMPBSystem(; data = PBData(), generic = VoronoiFVM.nofunc)
-  sys = VoronoiFVM.System(
-    grid;
-    data,
-    generic,
-    flux = flux!,
-    bcondition = bcondition!,
-    unknown_storage = :sparse,
-  )
-  enable_species!(sys, data.iϕ, [1])
-  for ic in 1:(data.N-1)
-    enable_boundary_species!(sys, data.iϕ + ic, [3])
-  end
-  return sys
+    sys = VoronoiFVM.System(
+        grid;
+        data,
+        generic,
+        flux = flux!,
+        bcondition = bcondition!,
+        unknown_storage = :sparse,
+    )
+    enable_species!(sys, data.iϕ, [1])
+    for ic in 1:(data.N - 1)
+        enable_boundary_species!(sys, data.iϕ + ic, [3])
+    end
+    return sys
 end
 
 # ╔═╡ f7a0fd72-5493-44c0-ab73-e7639bb1cb8b
@@ -377,31 +376,31 @@ const idx = unknown_indices(unknowns(sys3_0));
 
 # ╔═╡ 37581680-dcfd-46f7-abe3-7b64338a5c07
 function xreaction!(f, u, sys, data)
-  (; cache, iϕ, N, z, F, c_avg, c̄) = data
-  y = get_tmp(cache, u)
-  c_ref = [u[idx[ic+iϕ, i3]] for ic in 1:(N-1)]
-  push!(c_ref, -z[1:(N-1)] ⋅ c_ref / z[N])
-  c0_ref = c̄ - sum(c_ref)
-  L = sum(nv)
+    (; cache, iϕ, N, z, F, c_avg, c̄) = data
+    y = get_tmp(cache, u)
+    c_ref = [u[idx[ic + iϕ, i3]] for ic in 1:(N - 1)]
+    push!(c_ref, -z[1:(N - 1)] ⋅ c_ref / z[N])
+    c0_ref = c̄ - sum(c_ref)
+    L = sum(nv)
 
-  for ic in 1:(N-1)
-    f[idx[ic+iϕ, i3]] = 0
-  end
+    for ic in 1:(N - 1)
+        f[idx[ic + iϕ, i3]] = 0
+    end
 
-  for iv in 1:length(nv)
-    molfractions!(y, u[idx[iϕ, iv]], c_ref, c0_ref, data)
-    f[idx[iϕ, iv]] = 0
-    for ic in 1:N
-      f[idx[iϕ, iv]] -= y[ic] * c̄ * nv[iv] * z[ic] * F
+    for iv in 1:length(nv)
+        molfractions!(y, u[idx[iϕ, iv]], c_ref, c0_ref, data)
+        f[idx[iϕ, iv]] = 0
+        for ic in 1:N
+            f[idx[iϕ, iv]] -= y[ic] * c̄ * nv[iv] * z[ic] * F
+        end
+        for ic in 1:(N - 1)
+            f[idx[ic + iϕ, i3]] += y[ic] * c̄ * nv[iv]
+        end
     end
-    for ic in 1:(N-1)
-      f[idx[ic+iϕ, i3]] += y[ic] * c̄ * nv[iv]
+    for ic in 1:(N - 1)
+        f[idx[ic + iϕ, i3]] = f[idx[ic + iϕ, i3]] - c_avg[ic] * L
     end
-  end
-  for ic in 1:(N-1)
-    f[idx[ic+iϕ, i3]] = f[idx[ic+iϕ, i3]] - c_avg[ic] * L
-  end
-  return nothing
+    return nothing
 end
 
 # ╔═╡ 4445180b-3e7b-4315-8d6e-37c02a9886eb
@@ -413,10 +412,10 @@ $(@bind M3_avg confirm(PlutoUI.Slider(0.1:0.1:10, default=2, show_value=true),la
 
 
 # ╔═╡ 6af9813f-8927-4701-ace0-b0ac1c4c76e8
-Z=grid[Coordinates]/nm
+Z = grid[Coordinates] / nm
 
 # ╔═╡ 064e1460-d9ef-43bf-8e57-f55ef5dc5f60
-indata=(M=M3_avg,q=n3_e, L=L/nm, n=length(Z))
+indata = (M = M3_avg, q = n3_e, L = L / nm, n = length(Z))
 
 # ╔═╡ c2688a2f-472f-4f2e-8378-b0306299e225
 savename(indata)
@@ -435,50 +434,50 @@ state3 = VoronoiFVM.SystemState(sys3; data = data3)
 
 # ╔═╡ 73791e32-0cb7-4feb-93b1-2933ac662a0c
 begin
-  inival3 = unknowns(sys3, inival = 0.0)
-  inival3[2:N, i3] .= c3_avg[1:(N-1)] / 2
+    inival3 = unknowns(sys3, inival = 0.0)
+    inival3[2:N, i3] .= c3_avg[1:(N - 1)] / 2
 end;
 
 # ╔═╡ 7d5cf0bf-515f-46a7-9970-742911e27974
 sol3 = solve!(state3; inival = inival3, verbose = "n", damp_initial = 0.5)
 
 # ╔═╡ 3ef203e9-7beb-4b28-b62c-f63b12e0d628
-conc=concentrations(sol3, data3, c_ref=extcref(sol3[2:N, i3], data3))/(mol/dm^3)
+conc = concentrations(sol3, data3, c_ref = extcref(sol3[2:N, i3], data3)) / (mol / dm^3)
 
 # ╔═╡ 24bf7c21-0027-4f28-aa69-b2bbb6934bf7
-c0=c̄/(mol/dm^3).-sum(conc,dims=1)
+c0 = c̄ / (mol / dm^3) .- sum(conc, dims = 1)
 
 # ╔═╡ 31bb7711-abd0-42b3-86cf-577cddc104d7
 md""" Save: $(@bind dosave PlutoUI.CheckBox())   Save again: $(@bind saveagain PlutoUI.Button("Save again")) """
 
 # ╔═╡ 2837efc4-3f0a-4bc6-82f2-861b94df6af3
-result=vcat(Z, c0, conc)'
+result = vcat(Z, c0, conc)'
 
 # ╔═╡ 89e8a56c-9a28-407f-9490-7c5acd2ffb3d
-if dosave 
-	saveagain
-	writedlm(resultsdir(savename("icmpb",indata,"csv")),result, ",")
+if dosave
+    saveagain
+    writedlm(resultsdir(savename("icmpb", indata, "csv")), result, ",")
 
-  JuliaMPBSolver.DataOut.write_hdf5_data!(
-    resultsdir(savename("icmpb", indata, "hdf5")),
-    grid,
-    c0,
-    "c_solvent",
-  )
-  JuliaMPBSolver.DataOut.write_hdf5_data!(
-    resultsdir(savename("icmpb", indata, "hdf5")),
-    grid,
-    conc[1, :],
-    "c_anion",
-  )
-  JuliaMPBSolver.DataOut.write_hdf5_data!(
-    resultsdir(savename("icmpb", indata, "hdf5")),
-    grid,
-    conc[2, :],
-    "c_cation",
-  )
+    JuliaMPBSolver.DataOut.write_hdf5_data!(
+        resultsdir(savename("icmpb", indata, "hdf5")),
+        grid,
+        c0,
+        "c_solvent",
+    )
+    JuliaMPBSolver.DataOut.write_hdf5_data!(
+        resultsdir(savename("icmpb", indata, "hdf5")),
+        grid,
+        conc[1, :],
+        "c_anion",
+    )
+    JuliaMPBSolver.DataOut.write_hdf5_data!(
+        resultsdir(savename("icmpb", indata, "hdf5")),
+        grid,
+        conc[2, :],
+        "c_cation",
+    )
 
-	@info "written $(rand())"
+    @info "written $(rand())"
 end
 
 # ╔═╡ 8af12f1c-d35b-4cc9-8185-1bb5adbb69e8
@@ -494,86 +493,86 @@ myround(x) = round(x, sigdigits = 4)
 
 # ╔═╡ 3fa9d05a-a3f6-4e07-9a5d-f53ee2126cae
 function plotsol(
-  sol,
-  sys;
-  data = data(sys),
-  grid = grid,
-  c_ref = data.c_ref,
-  size = (600, 400),
-)
-  PythonPlot.clf()
-  fig, ax = pyplot.subplots(2, 1)
-  fig.set_size_inches(size[1] / 100, size[2] / 100)
-  ax1 = ax[0]
-  ax2 = ax[1]
-  ax1.grid()
-  ax1r = ax1.twinx()
-  X = grid[Coordinates][1, :]
-  ε_r = relpermittivity(sol, data; grid)
-  c = concentrations(sol, data; c_ref)
-  c0 = -(sum(c, dims = 1) .- c̄)
-  ax1.set_title(
-    "ϕ∈$(round.(Float64.(extrema(sol[1, :])), sigdigits = 3)), ε_r ∈$(round.(Float64.(extrema(ε_r)), sigdigits = 3))",
-  )
-  ax1.plot(X / nm, sol[1, :], color = "green", linewidth = 2, label = "ϕ")
-  ax1r.plot(
-    X[1:(end-1)] / nm,
-    ε_r,
-    color = "pink",
-    linewidth = 3,
-    label = L"ε_r",
-  )
-  #   ax1.set_ylim(-10, 10)
-  ax1.set_xlabel("z/nm")
-  ax1.set_ylabel("ϕ/V")
-  ax1.legend(loc = (0.1, 0.1))
-  ax1r.legend(loc = (0.8, 0.1))
-  ax1r.set_ylim(0, 80)
+        sol,
+        sys;
+        data = data(sys),
+        grid = grid,
+        c_ref = data.c_ref,
+        size = (600, 400),
+    )
+    PythonPlot.clf()
+    fig, ax = pyplot.subplots(2, 1)
+    fig.set_size_inches(size[1] / 100, size[2] / 100)
+    ax1 = ax[0]
+    ax2 = ax[1]
+    ax1.grid()
+    ax1r = ax1.twinx()
+    X = grid[Coordinates][1, :]
+    ε_r = relpermittivity(sol, data; grid)
+    c = concentrations(sol, data; c_ref)
+    c0 = -(sum(c, dims = 1) .- c̄)
+    ax1.set_title(
+        "ϕ∈$(round.(Float64.(extrema(sol[1, :])), sigdigits = 3)), ε_r ∈$(round.(Float64.(extrema(ε_r)), sigdigits = 3))",
+    )
+    ax1.plot(X / nm, sol[1, :], color = "green", linewidth = 2, label = "ϕ")
+    ax1r.plot(
+        X[1:(end - 1)] / nm,
+        ε_r,
+        color = "pink",
+        linewidth = 3,
+        label = L"ε_r",
+    )
+    #   ax1.set_ylim(-10, 10)
+    ax1.set_xlabel("z/nm")
+    ax1.set_ylabel("ϕ/V")
+    ax1.legend(loc = (0.1, 0.1))
+    ax1r.legend(loc = (0.8, 0.1))
+    ax1r.set_ylim(0, 80)
 
-  ax2.grid()
-  cavg = avgconcentrations(sol, sys; data, c_ref)
-  cm, cp = cavg[1] / (mol / dm^3), cavg[2] / (mol / dm^3)
-  crm, crp = c_ref[1] / (mol / dm^3), c_ref[2] / (mol / dm^3)
+    ax2.grid()
+    cavg = avgconcentrations(sol, sys; data, c_ref)
+    cm, cp = cavg[1] / (mol / dm^3), cavg[2] / (mol / dm^3)
+    crm, crp = c_ref[1] / (mol / dm^3), c_ref[2] / (mol / dm^3)
 
-  ax2.set_title("M_ref=$(myround.((crm, crp))),  M_avg=$(myround.((cm, cp)))")
-  ax2.set_xlabel("z/nm")
-  ax2.set_ylabel("c/(mol/L)")
-  ax2.set_ylim(0, 60)
+    ax2.set_title("M_ref=$(myround.((crm, crp))),  M_avg=$(myround.((cm, cp)))")
+    ax2.set_xlabel("z/nm")
+    ax2.set_ylabel("c/(mol/L)")
+    ax2.set_ylim(0, 60)
 
-  ax2.plot(
-    X / nm,
-    c[1, :] / (mol / dm^3),
-    color = "blue",
-    linewidth = 2,
-    label = L"c^-",
-  )
-  ax2.plot(
-    X / nm,
-    c[2, :] / (mol / dm^3),
-    color = "red",
-    linewidth = 2,
-    label = L"c^+",
-  )
-  ax2.plot(
-    X / nm,
-    c0[1, :] / (mol / dm^3),
-    color = "green",
-    linewidth = 2,
-    label = L"c_{solvent}",
-  )
-  ax2.legend(loc = (0.4, 0.1))
+    ax2.plot(
+        X / nm,
+        c[1, :] / (mol / dm^3),
+        color = "blue",
+        linewidth = 2,
+        label = L"c^-",
+    )
+    ax2.plot(
+        X / nm,
+        c[2, :] / (mol / dm^3),
+        color = "red",
+        linewidth = 2,
+        label = L"c^+",
+    )
+    ax2.plot(
+        X / nm,
+        c0[1, :] / (mol / dm^3),
+        color = "green",
+        linewidth = 2,
+        label = L"c_{solvent}",
+    )
+    ax2.legend(loc = (0.4, 0.1))
 
-  tight_layout()
-  return PythonPlot.gcf()
+    tight_layout()
+    return PythonPlot.gcf()
 end
 
 # ╔═╡ 13cb4936-ff78-4064-85c5-a7d51c4963e3
 plotsol(
-  sol3,
-  sys3;
-  data = data3,
-  c_ref = extcref(sol3[2:N, i3], data3),
-  size = (600, 400),
+    sol3,
+    sys3;
+    data = data3,
+    c_ref = extcref(sol3[2:N, i3], data3),
+    size = (600, 400),
 )
 
 # ╔═╡ 784b4c3e-bb2a-4940-a83a-ed5e5898dfd4
@@ -581,49 +580,49 @@ html"""<style>.dont-panic{ display: none }</style>"""
 
 # ╔═╡ afe4745f-f9f1-4e23-8735-cbec6fb79c41
 begin
-  function floataside(text::Markdown.MD; top = 1)
-    uuid = uuid1()
-    return @htl(
-      """
-      		<style>
+    function floataside(text::Markdown.MD; top = 1)
+        uuid = uuid1()
+        return @htl(
+            """
+            		<style>
 
 
-      		@media (min-width: calc(700px + 30px + 300px)) {
-      			aside.plutoui-aside-wrapper-$(uuid) {
+            		@media (min-width: calc(700px + 30px + 300px)) {
+            			aside.plutoui-aside-wrapper-$(uuid) {
 
-      	color: var(--pluto-output-color);
-      	position:fixed;
-      	right: 1rem;
-      	top: $(top)px;
-      	width: 400px;
-      	padding: 10px;
-      	border: 3px solid rgba(0, 0, 0, 0.15);
-      	border-radius: 10px;
-      	box-shadow: 0 0 11px 0px #00000010;
-      	/* That is, viewport minus top minus Live Docs */
-      	max-height: calc(100vh - 5rem - 56px);
-      	overflow: auto;
-      	z-index: 40;
-      	background-color: var(--main-bg-color);
-      	transition: transform 300ms cubic-bezier(0.18, 0.89, 0.45, 1.12);
+            	color: var(--pluto-output-color);
+            	position:fixed;
+            	right: 1rem;
+            	top: $(top)px;
+            	width: 400px;
+            	padding: 10px;
+            	border: 3px solid rgba(0, 0, 0, 0.15);
+            	border-radius: 10px;
+            	box-shadow: 0 0 11px 0px #00000010;
+            	/* That is, viewport minus top minus Live Docs */
+            	max-height: calc(100vh - 5rem - 56px);
+            	overflow: auto;
+            	z-index: 40;
+            	background-color: var(--main-bg-color);
+            	transition: transform 300ms cubic-bezier(0.18, 0.89, 0.45, 1.12);
 
-      			}
-      			aside.plutoui-aside-wrapper > div {
-      #				width: 300px;
-      			}
-      		}
-      		</style>
+            			}
+            			aside.plutoui-aside-wrapper > div {
+            #				width: 300px;
+            			}
+            		}
+            		</style>
 
-      		<aside class="plutoui-aside-wrapper-$(uuid)">
-      		<div>
-      		$(text)
-      		</div>
-      		</aside>
+            		<aside class="plutoui-aside-wrapper-$(uuid)">
+            		<div>
+            		$(text)
+            		</div>
+            		</aside>
 
-      		"""
-    )
-  end
-  floataside(stuff; kwargs...) = floataside(md"""$(stuff)"""; kwargs...)
+            		"""
+        )
+    end
+    floataside(stuff; kwargs...) = floataside(md"""$(stuff)"""; kwargs...)
 end;
 
 # ╔═╡ b8fd36a7-d8d1-45f7-b66e-df9132168bfc

@@ -144,7 +144,7 @@ begin
 end
 
 # ╔═╡ efb12e12-825b-4dfd-aa10-c6afb304b6bf
-ph"e"/ufac"nm^2"
+ph"e" / ufac"nm^2"
 
 # ╔═╡ 6f037b32-e2a8-4693-b46c-952d6b140e8e
 begin
@@ -166,7 +166,7 @@ function qsweep(sys; qmax = 10, nsteps = 100)
     volts = []
     Q = []
     for q in range(0, qmax, length = 50)
-		@info q
+        @info q
         apply_charge!(sys, q * ph"e" / ufac"nm^2")
         sol = solve(sys, inival = sol)
         push!(volts, (sol[iφ, end] - sol[iφ, 1]) / 2)

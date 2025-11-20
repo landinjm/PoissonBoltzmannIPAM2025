@@ -7,4 +7,3 @@ print(x)
 print(c0)
 print(cm)
 print(cp)
-

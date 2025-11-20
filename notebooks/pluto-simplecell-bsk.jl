@@ -6,19 +6,19 @@ using InteractiveUtils
 
 # ╔═╡ a70cef7d-2a2f-4155-bdf3-fec9df94c63f
 begin
-  using Pkg
-  Pkg.activate(joinpath(@__DIR__, ".."))
-  using PlutoUI, HypertextLiteral, UUIDs
-  using LinearAlgebra
-  using Interpolations
-  using VoronoiFVM, ExtendableGrids
-  using LaTeXStrings
-  using LessUnitful, Unitful
-  using PreallocationTools
-  using PythonPlot
-  using LaTeXStrings
-  using DoubleFloats
-  using ForwardDiff
+    using Pkg
+    Pkg.activate(joinpath(@__DIR__, ".."))
+    using PlutoUI, HypertextLiteral, UUIDs
+    using LinearAlgebra
+    using Interpolations
+    using VoronoiFVM, ExtendableGrids
+    using LaTeXStrings
+    using LessUnitful, Unitful
+    using PreallocationTools
+    using PythonPlot
+    using LaTeXStrings
+    using DoubleFloats
+    using ForwardDiff
 end
 
 # ╔═╡ f6947f22-4c05-4cf6-8380-4aace64fe7d3
@@ -40,16 +40,16 @@ See LessUnitful.jl  `ph` and `ufac` and Unitful.jl for `u`
 
 # ╔═╡ 927fac38-2d84-4ae5-984b-732f3b035420
 begin
-  const χ_S = 78.49 - 1
-  const F = ph"N_A" * ph"e"
-  const K = ufac"K"
-  const nm = ufac"nm"
-  const m = ufac"m"
-  const dm = ufac"dm"
-  const V = ufac"V"
-  const mol = ufac"mol"
-  const T = (273.15 + 25) * ufac"K"
-  const RT = ph"R" * T
+    const χ_S = 78.49 - 1
+    const F = ph"N_A" * ph"e"
+    const K = ufac"K"
+    const nm = ufac"nm"
+    const m = ufac"m"
+    const dm = ufac"dm"
+    const V = ufac"V"
+    const mol = ufac"mol"
+    const T = (273.15 + 25) * ufac"K"
+    const RT = ph"R" * T
 end
 
 # ╔═╡ ce01181a-81c0-4507-9896-4e5f4aa9b8a8
@@ -126,7 +126,7 @@ md"""
 md"""
 ### BSK modification
 
-Motivated by MD experiements by Fedorov/Kornyshev 
+Motivated by MD experiments by Fedorov/Kornyshev 
 """
 
 # ╔═╡ ad1ca3eb-6020-4994-93a5-0cde9c92318d
@@ -166,18 +166,18 @@ md"""
 
 # ╔═╡ 9e5c58ed-af67-4ea4-bae8-e4b75ecd08cd
 begin
-  const floattype = Float64
-  const L = 10.0nm # computational domain size
-  const nel = 20 # number of electrons/nm^2
-  const lc = 1 * nm # BSK parameter
-  const M_bulk = 1 # (bulk) molarity at center of domain
-  const E0 = floattype(10V / nm) # decrement parameter
-  const a = 5.0 / E0^2 # decrement parameter in χ(E)
-  const q = nel * ph"e" / ufac"nm^2" # surface charge
-  const c_bulk = [M_bulk, M_bulk] * mol / dm^3 # bulk  concentrations
-  const z = floattype[-1, 1] # species charge numbers
-  const c̄ = 55.508mol / dm^3 # summary molar concentration
-  const ε_0 = floattype(ph"ε_0")
+    const floattype = Float64
+    const L = 10.0nm # computational domain size
+    const nel = 20 # number of electrons/nm^2
+    const lc = 1 * nm # BSK parameter
+    const M_bulk = 1 # (bulk) molarity at center of domain
+    const E0 = floattype(10V / nm) # decrement parameter
+    const a = 5.0 / E0^2 # decrement parameter in χ(E)
+    const q = nel * ph"e" / ufac"nm^2" # surface charge
+    const c_bulk = [M_bulk, M_bulk] * mol / dm^3 # bulk  concentrations
+    const z = floattype[-1, 1] # species charge numbers
+    const c̄ = 55.508mol / dm^3 # summary molar concentration
+    const ε_0 = floattype(ph"ε_0")
 end;
 
 # ╔═╡ a5f44f72-608c-4503-a90a-6fcbf72c2b71
@@ -193,9 +193,9 @@ Check for bulk electroneutrality:
 
 # ╔═╡ 6993be42-526d-47bf-8633-1dee7e0a0eab
 begin
-  const c0_bulk = c̄ - sum(c_bulk) # solvent bulk molar concentration
-  const l_debye = sqrt((1 + χ_S) * ε_0 * RT / (F^2 * c_bulk[1])) # Debye length
-  const dlcap0 = sqrt(2 * (1 + χ_S) * ε_0 * F^2 * c_bulk[1] / RT) # Double layer capacitance at point of zero charge (0V)
+    const c0_bulk = c̄ - sum(c_bulk) # solvent bulk molar concentration
+    const l_debye = sqrt((1 + χ_S) * ε_0 * RT / (F^2 * c_bulk[1])) # Debye length
+    const dlcap0 = sqrt(2 * (1 + χ_S) * ε_0 * F^2 * c_bulk[1] / RT) # Double layer capacitance at point of zero charge (0V)
 end;
 
 # ╔═╡ bf9ccc9e-bbdb-4511-a28f-4f1802da9f35
@@ -214,19 +214,19 @@ const nref = 4 # grid refinement level
 
 # ╔═╡ f6be79eb-626e-4a47-b82a-85fd78e0498f
 begin
-  const hmin = 1.0e-1 * nm * 2.0^(-nref) # grid size at working electrode
-  const hmax = 1.0 * nm * 2.0^(-nref) # grid size at bulk
+    const hmin = 1.0e-1 * nm * 2.0^(-nref) # grid size at working electrode
+    const hmax = 1.0 * nm * 2.0^(-nref) # grid size at bulk
 
-  δx = 1.0e-3 * nm * 0 # X offset for logarithmic in x plots
-  X0 = geomspace(δx, L / 2, hmin, hmax)
-  X1 = geomspace(L / 2, L - δx, hmax, hmin)
-  X = glue(X0, X1)
+    δx = 1.0e-3 * nm * 0 # X offset for logarithmic in x plots
+    X0 = geomspace(δx, L / 2, hmin, hmax)
+    X1 = geomspace(L / 2, L - δx, hmax, hmin)
+    X = glue(X0, X1)
 end
 
 # ╔═╡ c5bb8f4a-d146-4f50-b9e7-06611dc825ee
 begin
-  grid = simplexgrid(X)
-  bfacemask!(grid, [L / 2], [L / 2], 3, tol = 1.0e-10 * nm)
+    grid = simplexgrid(X)
+    bfacemask!(grid, [L / 2], [L / 2], 3, tol = 1.0e-10 * nm)
 end
 
 # ╔═╡ efdf11c6-b75c-4663-86d5-82ead82c397f
@@ -254,14 +254,14 @@ end
 
 # ╔═╡ ffbf3c15-9397-4a07-a48f-458c963fe613
 function flux!(y, u, edge, data)
-  eins = one(eltype(u))
-  h = floattype(edgelength(edge))
-  E = (u[1, 1] - u[1, 2]) / h
-  χ = χ_S / sqrt(eins + a * E^2)
-  ε = (eins + χ) * ε_0
-  y[1] = ε * ((u[1, 1] - u[1, 2]) - lc^2 * (u[2, 1] - u[2, 2]))
-  y[2] = u[1, 1] - u[1, 2]
-  return nothing
+    eins = one(eltype(u))
+    h = floattype(edgelength(edge))
+    E = (u[1, 1] - u[1, 2]) / h
+    χ = χ_S / sqrt(eins + a * E^2)
+    ε = (eins + χ) * ε_0
+    y[1] = ε * ((u[1, 1] - u[1, 2]) - lc^2 * (u[2, 1] - u[2, 2]))
+    y[2] = u[1, 1] - u[1, 2]
+    return nothing
 end
 
 # ╔═╡ d0ea64ed-d351-401e-bfb7-bdf1fbc7227d
@@ -289,10 +289,10 @@ end
 
 # ╔═╡ b6f0a027-c4ed-4a9d-81a2-033421a2beea
 function bcondition!(y, u, bnode, data)
-  boundary_neumann!(y, u, bnode, species = 1, region = 2, value = -q)
-  boundary_neumann!(y, u, bnode, species = 1, region = 1, value = q)
-  boundary_dirichlet!(y, u, bnode, species = 2, region = 3, value = 0)
-  return nothing
+    boundary_neumann!(y, u, bnode, species = 1, region = 2, value = -q)
+    boundary_neumann!(y, u, bnode, species = 1, region = 1, value = q)
+    boundary_dirichlet!(y, u, bnode, species = 2, region = 3, value = 0)
+    return nothing
 end
 
 # ╔═╡ c92d5e01-6988-4cbf-bd2f-bdef7bafa86d
@@ -347,26 +347,26 @@ end
 
 # ╔═╡ 00e6a252-2896-40b8-a34f-55fb2780c30c
 function bee!(y, ϕ)
-  N = length(z)
-  for i in 1:N
-    y[i] = RT * log(c_bulk[i] / c0_bulk) / F - z[i] * ϕ
-  end
-  return nothing
+    N = length(z)
+    for i in 1:N
+        y[i] = RT * log(c_bulk[i] / c0_bulk) / F - z[i] * ϕ
+    end
+    return nothing
 end
 
 # ╔═╡ bbf14b15-c668-40a9-86b2-8275f055f05f
 function bee(sol)
-  n = size(sol, 2)
-  N = length(z)
-  e = zeros(N, n)
-  y = zeros(N)
-  for i in 1:n
-    bee!(y, sol[1, i])
-    for j in 1:N
-      e[j, i] = y[j]
+    n = size(sol, 2)
+    N = length(z)
+    e = zeros(N, n)
+    y = zeros(N)
+    for i in 1:n
+        bee!(y, sol[1, i])
+        for j in 1:N
+            e[j, i] = y[j]
+        end
     end
-  end
-  return e
+    return e
 end
 
 # ╔═╡ bd6b0867-c3c8-4d3c-aee6-213cd87dbfc2
@@ -536,49 +536,49 @@ html"""<style>.dont-panic{ display: none }</style>"""
 
 # ╔═╡ afe4745f-f9f1-4e23-8735-cbec6fb79c41
 begin
-  function floataside(text::Markdown.MD; top = 1)
-    uuid = uuid1()
-    return @htl(
-      """
-      		<style>
+    function floataside(text::Markdown.MD; top = 1)
+        uuid = uuid1()
+        return @htl(
+            """
+            		<style>
 
 
-      		@media (min-width: calc(700px + 30px + 300px)) {
-      			aside.plutoui-aside-wrapper-$(uuid) {
+            		@media (min-width: calc(700px + 30px + 300px)) {
+            			aside.plutoui-aside-wrapper-$(uuid) {
 
-      	color: var(--pluto-output-color);
-      	position:fixed;
-      	right: 1rem;
-      	top: $(top)px;
-      	width: 400px;
-      	padding: 10px;
-      	border: 3px solid rgba(0, 0, 0, 0.15);
-      	border-radius: 10px;
-      	box-shadow: 0 0 11px 0px #00000010;
-      	/* That is, viewport minus top minus Live Docs */
-      	max-height: calc(100vh - 5rem - 56px);
-      	overflow: auto;
-      	z-index: 40;
-      	background-color: var(--main-bg-color);
-      	transition: transform 300ms cubic-bezier(0.18, 0.89, 0.45, 1.12);
+            	color: var(--pluto-output-color);
+            	position:fixed;
+            	right: 1rem;
+            	top: $(top)px;
+            	width: 400px;
+            	padding: 10px;
+            	border: 3px solid rgba(0, 0, 0, 0.15);
+            	border-radius: 10px;
+            	box-shadow: 0 0 11px 0px #00000010;
+            	/* That is, viewport minus top minus Live Docs */
+            	max-height: calc(100vh - 5rem - 56px);
+            	overflow: auto;
+            	z-index: 40;
+            	background-color: var(--main-bg-color);
+            	transition: transform 300ms cubic-bezier(0.18, 0.89, 0.45, 1.12);
 
-      			}
-      			aside.plutoui-aside-wrapper > div {
-      #				width: 300px;
-      			}
-      		}
-      		</style>
+            			}
+            			aside.plutoui-aside-wrapper > div {
+            #				width: 300px;
+            			}
+            		}
+            		</style>
 
-      		<aside class="plutoui-aside-wrapper-$(uuid)">
-      		<div>
-      		$(text)
-      		</div>
-      		</aside>
+            		<aside class="plutoui-aside-wrapper-$(uuid)">
+            		<div>
+            		$(text)
+            		</div>
+            		</aside>
 
-      		"""
-    )
-  end
-  floataside(stuff; kwargs...) = floataside(md"""$(stuff)"""; kwargs...)
+            		"""
+        )
+    end
+    floataside(stuff; kwargs...) = floataside(md"""$(stuff)"""; kwargs...)
 end;
 
 # ╔═╡ 31013a97-fc82-4ad2-a14e-81bc93e36b8d
