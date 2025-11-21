@@ -119,7 +119,7 @@ class JuliaMPBSolver:
         )
 
         # Convert to numpy arrays
-        x_values = np.array(X)
+        x_values = np.array(jl.collect(X))
         c0_values = np.array(C0)
         cp_values = np.array(Cp)
         cm_values = np.array(Cm)
