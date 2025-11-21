@@ -5,9 +5,9 @@ This module provides the main NonlinearPoissonSolver class that wraps
 the Julia implementation.
 """
 
-import numpy as np
+from typing import List, Tuple
 
-from typing import Tuple, List
+import numpy as np
 from juliacall import Main as jl
 
 
