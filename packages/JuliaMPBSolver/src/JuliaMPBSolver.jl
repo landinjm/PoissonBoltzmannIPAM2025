@@ -30,4 +30,5 @@ end
 include("api.jl")
 
 export mpbpsolve
+export icmpbpsolve
 end

@@ -7,3 +7,12 @@ print(x)
 print(c0)
 print(cm)
 print(cp)
+
+
+
+solver=JuliaMPBSolver()
+x,c0,cp,cm=solver.icmpbpsolve()
+print(x)
+print(c0)
+print(cm)
+print(cp)

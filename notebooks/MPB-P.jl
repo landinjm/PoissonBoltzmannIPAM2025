@@ -24,7 +24,7 @@ end
 
 # ╔═╡ ef660f6f-9de3-4896-a65e-13c60df5de1e
 md"""
-# Ion conserving MPB with pressure, solvation and surface charges
+# MPB with pressure, solvation and surface charges
 """
 
 # ╔═╡ 4082c3d3-b728-4bcc-b480-cdee41d9ab99
@@ -109,68 +109,61 @@ function c0_num!(c, φ, p, data)
     return y / sumyv
 end;
 
+# ╔═╡ 00464966-2b1e-455c-a3a1-2af61c6649b7
+dlcap_exact = 0.22846691848825248
+
 # ╔═╡ 05334798-a072-41ae-b23e-f884baadb071
 begin
-    data = ICMPBData(; conserveions = true)
-    set_molarity!(data, 1)
+    data = ICMPBData()
+    set_molarity!(data, 0.01)
 end
+
+# ╔═╡ ddb3e60b-8571-465f-acf3-2403fb884363
+@test dlcap0(data) ≈ dlcap_exact
 
 # ╔═╡ a629e8a1-b1d7-42d8-8c17-43475785218e
 begin
 
     L = 10nm
-    n = 21
+    n = 101
 
     X = range(0, L, length = n)
 
     grid = ExtendableGrids.simplexgrid(X)
     bfacemask!(grid, [L / 2], [L / 2], 3, tol = 1.0e-10 * nm)
-    i3 = grid[BFaceNodes][3][1]
+
 end
 
 # ╔═╡ 31a1f686-f0b6-430a-83af-187df411b293
 sys = ICMPBSystem(grid, data)
 
-# ╔═╡ 684aa24b-046f-426f-9b99-f0c45c70f654
-inival = unknowns(sys, data);
+# ╔═╡ 9b16c019-f2ce-4b42-97e1-6d13a463a232
+inival = unknowns(sys, data)
 
 # ╔═╡ 14ac1c80-cae5-42f1-b0d3-33aa5bba4de6
 begin
-    state = VoronoiFVM.SystemState(sys)
-    sol0 = solve!(state; inival, verbose = "n", damp_initial = 0.1)
+    sol0 = solve(sys; inival, verbose = "n", damp_initial = 0.1)
+    ysum(sys, sol0)
 end
-
-# ╔═╡ d6f1acbc-d2b0-4d26-b9f6-ad46b9ddfb05
-sol0[:, i3]
-
-# ╔═╡ 1394cfd7-aecc-4559-a460-98082fd43a9c
-state.matrix
-
-# ╔═╡ a4c2f75e-6f20-4e28-8252-90d58fbf1b24
-data.conserveions
 
 # ╔═╡ efb12e12-825b-4dfd-aa10-c6afb304b6bf
 ph"e" / ufac"nm^2"
 
-# ╔═╡ 9108a7e6-176e-481b-8ca6-3c8445051e1c
-data.n_avg / ph"N_A"
-
 # ╔═╡ 6f037b32-e2a8-4693-b46c-952d6b140e8e
 begin
-    data1 = apply_charge!(deepcopy(data), 1 * ph"e" / ufac"nm^2")
+    data1 = apply_charge!(deepcopy(data), 2 * ph"e" / ufac"nm^2")
 
     sol1 = solve!(VoronoiFVM.SystemState(sys, data = data1); inival, verbose = "n", damp_initial = 0.1)
-    sol1[:, i3]
 end
 
 # ╔═╡ 1c0145d5-76b1-48c1-8852-de1a2668285a
-molarities = [0.1, 1]
+molarities = [0.001, 0.01, 0.1, 1]
 
 # ╔═╡ f1c33101-00e6-4af9-9e68-6cdf5fe92b59
-qsweep(sys, verbose = "n", qmax = 2)
+qsweep(sys)
 
 # ╔═╡ a7f2692e-a15f-47b7-8486-8948ce7ab3f7
-result_pp = capscalc(sys, molarities; qmax = 1)
+result_pp = capscalc(sys, molarities)
 
 # ╔═╡ e114ec0d-13d3-4455-b1c9-d1c5d76671d9
 md"""
@@ -223,7 +216,7 @@ let
 end
 
 # ╔═╡ Cell order:
-# ╠═ef660f6f-9de3-4896-a65e-13c60df5de1e
+# ╟─ef660f6f-9de3-4896-a65e-13c60df5de1e
 # ╠═60941eaa-1aea-11eb-1277-97b991548781
 # ╟─4082c3d3-b728-4bcc-b480-cdee41d9ab99
 # ╟─920b7d84-56c6-4958-aed9-fc67ba0c43f6
@@ -234,16 +227,14 @@ end
 # ╠═fe704fb4-d07c-4591-b834-d6cf2f4f7075
 # ╠═b1e333c0-cdaa-4242-b71d-b54ff71aef83
 # ╟─97c5942c-8eb4-4b5c-8951-87ac0c9f396d
+# ╠═00464966-2b1e-455c-a3a1-2af61c6649b7
 # ╠═05334798-a072-41ae-b23e-f884baadb071
+# ╠═ddb3e60b-8571-465f-acf3-2403fb884363
 # ╠═a629e8a1-b1d7-42d8-8c17-43475785218e
 # ╠═31a1f686-f0b6-430a-83af-187df411b293
-# ╠═684aa24b-046f-426f-9b99-f0c45c70f654
+# ╠═9b16c019-f2ce-4b42-97e1-6d13a463a232
 # ╠═14ac1c80-cae5-42f1-b0d3-33aa5bba4de6
-# ╠═d6f1acbc-d2b0-4d26-b9f6-ad46b9ddfb05
-# ╠═1394cfd7-aecc-4559-a460-98082fd43a9c
-# ╠═a4c2f75e-6f20-4e28-8252-90d58fbf1b24
 # ╠═efb12e12-825b-4dfd-aa10-c6afb304b6bf
-# ╠═9108a7e6-176e-481b-8ca6-3c8445051e1c
 # ╠═6f037b32-e2a8-4693-b46c-952d6b140e8e
 # ╠═1c0145d5-76b1-48c1-8852-de1a2668285a
 # ╠═f1c33101-00e6-4af9-9e68-6cdf5fe92b59
